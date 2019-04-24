@@ -3,20 +3,20 @@ $(document).ready(function () {
   init();
 });
 
-// var divisions = {
-//   "2019arc": {},
-//   "2019cars": {},
-//   "2019cur": {},
-//   "2019dal": {},
-//   "2019dar": {},
-//   "2019tes": {},
-//   "2019cmpmi": {}
-// }
-
 var divisions = {
-  "2019alhu": {},
-  "2019mosl": {}
+  "2019arc": {},
+  "2019cars": {},
+  "2019cur": {},
+  "2019dal": {},
+  "2019dar": {},
+  "2019tes": {},
+  "2019cmpmi": {}
 }
+
+// var divisions = {
+//   "2019alhu": {},
+//   "2019mosl": {}
+// }
 
 function init() {
   $("#doDistrictMatches").click(function (e) {
@@ -59,27 +59,51 @@ function addMatches(matches) {
 }
 
 function render() {
-  let contentText = ""
+  let divisionListText = ""
   Object.keys(divisions).forEach(divisionKey => {
-    contentText += renderDivision(divisionKey)
+    divisionListText += renderDivision(divisionKey)
   });
 
+  $('#matchInfo').html(divisionListText)
 
-  $('#matchInfo').html(contentText)
+  let allMatchText = renderAllMatches()
+  $('#allMatchInfo').html(allMatchText)
 }
 
 function renderDivision(divisionKey) {
-  sortMatches(divisionKey)
+  // Get the matches
   let division = divisions[divisionKey]
+
+  // Sort them
+  division = sortMatches(division)
+
+  // Save them
+  divisions[divisionKey] = division
 
   return renderTableContents(divisionKey, division)
 }
 
-function renderTableContents(title, division) {
+function renderAllMatches() {
+  let allMatches = {}
+  Object.keys(divisions).forEach(divisionKey => {
+    allMatches = {
+      ...allMatches,
+      ...divisions[divisionKey]
+    }
+  });
+
+  // Sort them after we have them all added
+  sortMatches(allMatches)
+
+  return renderTableContents("All Matches", allMatches, true)
+}
+
+function renderTableContents(title, division, renderEvent = false) {
   var result = `
-      <h3>${title}</h3>
+      <h3>${eventNameFrom(title)} (${title})</h3>
       <table>
       <tr>
+        ${renderEvent ? "<td>Event</td>" : ""}
         <td>Comp Level</td>
         <td>Match Number</td>
         <td>Time</td>
@@ -93,7 +117,7 @@ function renderTableContents(title, division) {
     `;
 
   Object.keys(division).forEach(matchKey => {
-    const match = divisions[title][matchKey]
+    const match = division[matchKey]
 
     const d = new Date(match.time * 1000);
     const time = d.toLocaleTimeString();
@@ -102,6 +126,7 @@ function renderTableContents(title, division) {
 
     matchesText += `
         <tr>
+          ${renderEvent ? `<td>${eventNameFrom(match.event_key)}</td>` : ""}
           <td>${match.comp_level}</td>
           <td>
             ${match.match_number}${match.comp_level != "qm" ? `-${match.set_number}` : ""}
@@ -125,9 +150,8 @@ function renderTableContents(title, division) {
   return result
 }
 
-function sortMatches(divisionKey) {
-  let division = divisions[divisionKey]
-  divisions[divisionKey] = Object.fromEntries(Object.entries(division).sort(function (a, b) {
+function sortMatches(division) {
+  return Object.fromEntries(Object.entries(division).sort(function (a, b) {
     return a[1].time - b[1].time
   }))
 }
@@ -138,6 +162,26 @@ function selectedTeamKey(teamNumber) {
 
 function teamNumberFromKey(teamKey) {
   return teamKey.slice(3)
+}
+
+function eventNameFrom(eventKey) {
+  var map = {
+    "2019arc": "Archimedes",
+    "2019cars": "Carson",
+    "2019cur": "Curie",
+    "2019dal": "Daly",
+    "2019dar": "Darwin",
+    "2019tes": "Tesla",
+    "2019cmpmi": "Einstein"
+  }
+  // var map = {
+  //   "2019alhu": "Rocket City",
+  //   "2019mosl": "St. Louis"
+  // }
+
+  // Return the mapped string if possible
+  // otherwise return the event key
+  return map[eventKey] || eventKey
 }
 
 function urlWithAuth(url) {
