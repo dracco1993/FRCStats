@@ -15,8 +15,11 @@ var divisions = {
 
 // var divisions = {
 //   "2019alhu": {},
-//   "2019mosl": {}
+//   "2019mosl": {},
+//   "2019ingre": {}
 // }
+
+var rankings = []
 
 var districtTeams = []
 
@@ -27,6 +30,27 @@ function init() {
   })
 }
 
+function getRankingsFor(division) {
+  var endpoint = `event/${division}/rankings`
+
+  $.getJSON(urlWithAuth(endpoint), function (rankingStats) {
+    // If this division doesn't hang rankings
+    // please don't break the rest of them...
+    if (rankingStats.rankings != null) {
+      rankingStats.rankings.forEach(rank => {
+        let teamNumber = rank.team_key
+
+        if (isDistrictTeam(teamNumber)) {
+          rankings.push({
+            ...rank,
+            division: division
+          })
+        }
+      })
+    }
+  });
+}
+
 function getTeamsForDistrict(districtKey) {
   var endpoint = `district/2019${districtKey}/teams/keys`
 
@@ -35,6 +59,12 @@ function getTeamsForDistrict(districtKey) {
     teams.forEach(team => {
       districtTeams.push(team)
     });
+
+    // Get the rankings for each division
+    Object.keys(divisions).forEach(division => {
+      getRankingsFor(division);
+    });
+
     getTeamMatchesForChamps(teams)
   });
 }
@@ -64,15 +94,57 @@ function addMatches(matches) {
 }
 
 function render() {
+  // Render the ranking section
+  let rankingText = renderRankings()
+  $('#rankInfo').html(rankingText)
+
+  // Render the division matches section
   let divisionListText = ""
   Object.keys(divisions).forEach(divisionKey => {
     divisionListText += renderDivision(divisionKey)
   });
-
   $('#matchInfo').html(divisionListText)
 
+  // Render the all matches section
   let allMatchText = renderAllMatches()
   $('#allMatchInfo').html(allMatchText)
+}
+
+function renderRankings() {
+  let result = `
+    <h3>Rankings</h3>
+    <table>
+      <tr>
+        <td>Team</td>
+        <td>Rank</td>
+        <td>Division</td>
+
+      </tr>
+  `
+
+  // Sort by rank first, then team number
+  rankings = rankings.sort(function (a, b) {
+    if (a.rank != b.rank) {
+      return a.rank - b.rank
+    } else {
+      return teamNumberFromKey(a.team_key) - teamNumberFromKey(b.team_key)
+    }
+  })
+
+  // Render the individual rows
+  rankings.forEach(rank => {
+    result += `
+      <tr>
+      <td>${teamNumberFromKey(rank.team_key)}</td>
+      <td>${rank.rank}</td>
+      <td>${eventNameFrom(rank.division)}</td>
+      </tr>
+    `
+  });
+
+  result += "</table><br>"
+
+  return result
 }
 
 function renderDivision(divisionKey) {
@@ -213,10 +285,6 @@ function eventNameFrom(eventKey) {
     "2019tes": "Tesla",
     "2019cmpmi": "Einstein"
   }
-  // var map = {
-  //   "2019alhu": "Rocket City",
-  //   "2019mosl": "St. Louis"
-  // }
 
   // Return the mapped string if possible
   // otherwise return the event key
