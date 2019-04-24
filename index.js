@@ -98,7 +98,7 @@ function renderAllMatches() {
   });
 
   // Sort them after we have them all added
-  sortMatches(allMatches)
+  allMatches = sortMatches(allMatches)
 
   return renderTableContents("All Matches", allMatches, true)
 }
