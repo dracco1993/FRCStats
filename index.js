@@ -116,30 +116,40 @@ function render() {
   var matches = "";
 
   Object.keys(divisions).forEach(divisionKey => {
+    sortMatches(divisionKey)
     let division = divisions[divisionKey]
+
     Object.keys(division).forEach(matchKey => {
       const match = divisions[divisionKey][matchKey]
-
 
       matches += `
       <tr>
         <td>${match.comp_level}</td>
-        <td>${match.match_number}</td>
-        <td>${match.time}</td>
+        <td>
+          ${match.match_number}${match.comp_level != "qm" ? `-${match.set_number}` : ""}
+        </td>
+      <td>${match.time}</td>
 
-        <td>${teamNumberFromKey(match.alliances.red.team_keys[0])}</td>
-        <td>${teamNumberFromKey(match.alliances.red.team_keys[1])}</td>
-        <td>${teamNumberFromKey(match.alliances.red.team_keys[2])}</td>
+      <td>${teamNumberFromKey(match.alliances.red.team_keys[0])}</td>
+      <td>${teamNumberFromKey(match.alliances.red.team_keys[1])}</td>
+      <td>${teamNumberFromKey(match.alliances.red.team_keys[2])}</td>
 
-        <td>${teamNumberFromKey(match.alliances.blue.team_keys[0])}</td>
-        <td>${teamNumberFromKey(match.alliances.blue.team_keys[1])}</td>
-        <td>${teamNumberFromKey(match.alliances.blue.team_keys[2])}</td>
-      </tr>
-    `;
+      <td>${teamNumberFromKey(match.alliances.blue.team_keys[0])}</td>
+      <td>${teamNumberFromKey(match.alliances.blue.team_keys[1])}</td>
+      <td>${teamNumberFromKey(match.alliances.blue.team_keys[2])}</td>
+      </tr >
+      `;
     });
   });
 
   $('#matchInfo').html(header + matches)
+}
+
+function sortMatches(divisionKey) {
+  let division = divisions[divisionKey]
+  divisions[divisionKey] = Object.fromEntries(Object.entries(division).sort(function (a, b) {
+    return a[1].time - b[1].time
+  }))
 }
 
 function addCountToObject(object, key) {
