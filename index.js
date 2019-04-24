@@ -3,8 +3,11 @@ $(document).ready(function () {
   init();
 });
 
+// var divisions = {
+//   "2019ingre": {}
+// }
 var divisions = {
-  "2019ingre": {}
+  "2019alhu": {}
 }
 
 function init() {
@@ -47,57 +50,6 @@ function addMatches(matches) {
   render()
 }
 
-function doStatsThings(teamNumber, matches) {
-  var startingLocations = {};
-  var climbingLocations = {};
-
-  for (var i = 0; i < matches.length; i++) {
-    var match = matches[i];
-    var teamPosition = getTeamPosition(teamNumber, match);
-
-    var startingLocation = getStartingLocation(
-      teamPosition["color"],
-      teamPosition["position"],
-      match
-    );
-    var climbingLocation = getClimbingLocation(
-      teamPosition["color"],
-      teamPosition["position"],
-      match
-    );
-
-    startingLocations = addCountToObject(startingLocations, startingLocation)
-    climbingLocations = addCountToObject(climbingLocations, climbingLocation)
-  }
-
-  stats.startingLocations.push({
-    teamNumber: teamNumber,
-    locations: {
-      HabLevel2: startingLocations["HabLevel2"] || 0,
-      HabLevel1: startingLocations["HabLevel1"] || 0,
-      None: startingLocations["None"] || 0
-    }
-  });
-  stats.climbingLocations.push({
-    teamNumber: teamNumber,
-    locations: {
-      HabLevel3: climbingLocations["HabLevel3"] || 0,
-      HabLevel2: climbingLocations["HabLevel2"] || 0,
-      HabLevel1: climbingLocations["HabLevel1"] || 0,
-      None: climbingLocations["None"] || 0
-    }
-  });
-
-  stats.startingLocations = stats.startingLocations.sort(function (a, b) {
-    return a.teamNumber - b.teamNumber
-  });
-  stats.climbingLocations = stats.climbingLocations.sort(function (a, b) {
-    return a.teamNumber - b.teamNumber
-  });
-
-  render();
-}
-
 function render() {
   var header = `
     <tr>
@@ -122,13 +74,16 @@ function render() {
     Object.keys(division).forEach(matchKey => {
       const match = divisions[divisionKey][matchKey]
 
+      const d = new Date(match.time * 1000);
+      const time = d.toLocaleTimeString();
+
       matches += `
       <tr>
         <td>${match.comp_level}</td>
         <td>
           ${match.match_number}${match.comp_level != "qm" ? `-${match.set_number}` : ""}
         </td>
-      <td>${match.time}</td>
+      <td>${time}</td>
 
       <td>${teamNumberFromKey(match.alliances.red.team_keys[0])}</td>
       <td>${teamNumberFromKey(match.alliances.red.team_keys[1])}</td>
@@ -151,52 +106,6 @@ function sortMatches(divisionKey) {
     return a[1].time - b[1].time
   }))
 }
-
-function addCountToObject(object, key) {
-  var current = object[key] || 0;
-  object[key] = current + 1;
-  return object;
-}
-
-function getStartingLocation(color, position, match) {
-  var locationKey = `preMatchLevelRobot${position}`;
-  return match.score_breakdown[color][locationKey];
-}
-
-function getClimbingLocation(color, position, match) {
-  var locationKey = `endgameRobot${position}`;
-  return match.score_breakdown[color][locationKey];
-}
-
-function getTeamPosition(teamNumber, match) {
-  // Check if they're on red; if they're not, they must be on blue...
-  var redAlliance = match.alliances.red.team_keys;
-  var blueAlliance = match.alliances.blue.team_keys;
-
-  // Loop over the red teams
-  for (let i = 0; i < redAlliance.length; i++) {
-    if (redAlliance[i] == selectedTeamKey(teamNumber)) {
-      return {
-        color: "red",
-        position: i + 1
-      }
-    }
-  }
-
-  // Loop over the blue teams
-  for (let i = 0; i < blueAlliance.length; i++) {
-    if (blueAlliance[i] == selectedTeamKey(teamNumber)) {
-      return {
-        color: "blue",
-        position: i + 1
-      }
-    }
-  }
-  console.error("TEAM NOT FOUND IN MATCH")
-}
-
-
-
 
 function selectedTeamKey(teamNumber) {
   return `frc${teamNumber}`
