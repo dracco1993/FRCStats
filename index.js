@@ -3,12 +3,19 @@ $(document).ready(function () {
   init();
 });
 
-// var divisions = {
-//   "2019ingre": {}
-// }
 var divisions = {
-  "2019alhu": {}
+  "2019arc": {},
+  "2019cars": {},
+  "2019cur": {},
+  "2019dal": {},
+  "2019dar": {},
+  "2019tes": {},
+  "2019cmpmi": {}
 }
+
+// var divisions = {
+//   "2019alhu": {}
+// }
 
 function init() {
   $("#doDistrictMatches").click(function (e) {
@@ -51,23 +58,24 @@ function addMatches(matches) {
 }
 
 function render() {
-  var header = `
-    <tr>
-      <td>Comp Level</td>
-      <td>Match Number</td>
-      <td>Time</td>
-      <td>R1</td>
-      <td>R2</td>
-      <td>R3</td>
-      <td>B1</td>
-      <td>B2</td>
-      <td>B3</td>
-    </tr>
-  `;
-
-  var matches = "";
-
+  let contentText = ""
   Object.keys(divisions).forEach(divisionKey => {
+    var divisionText = `
+      <h3>${divisionKey}</h3>
+      <table>
+      <tr>
+        <td>Comp Level</td>
+        <td>Match Number</td>
+        <td>Time</td>
+        <td>R1</td>
+        <td>R2</td>
+        <td>R3</td>
+        <td>B1</td>
+        <td>B2</td>
+        <td>B3</td>
+      </tr>
+    `;
+
     sortMatches(divisionKey)
     let division = divisions[divisionKey]
 
@@ -77,27 +85,35 @@ function render() {
       const d = new Date(match.time * 1000);
       const time = d.toLocaleTimeString();
 
-      matches += `
-      <tr>
-        <td>${match.comp_level}</td>
-        <td>
-          ${match.match_number}${match.comp_level != "qm" ? `-${match.set_number}` : ""}
-        </td>
-      <td>${time}</td>
+      var matchesText = "";
 
-      <td>${teamNumberFromKey(match.alliances.red.team_keys[0])}</td>
-      <td>${teamNumberFromKey(match.alliances.red.team_keys[1])}</td>
-      <td>${teamNumberFromKey(match.alliances.red.team_keys[2])}</td>
+      matchesText += `
+        <tr>
+          <td>${match.comp_level}</td>
+          <td>
+            ${match.match_number}${match.comp_level != "qm" ? `-${match.set_number}` : ""}
+          </td>
+        <td>${time}</td>
 
-      <td>${teamNumberFromKey(match.alliances.blue.team_keys[0])}</td>
-      <td>${teamNumberFromKey(match.alliances.blue.team_keys[1])}</td>
-      <td>${teamNumberFromKey(match.alliances.blue.team_keys[2])}</td>
-      </tr >
-      `;
+        <td>${teamNumberFromKey(match.alliances.red.team_keys[0])}</td>
+        <td>${teamNumberFromKey(match.alliances.red.team_keys[1])}</td>
+        <td>${teamNumberFromKey(match.alliances.red.team_keys[2])}</td>
+
+        <td>${teamNumberFromKey(match.alliances.blue.team_keys[0])}</td>
+        <td>${teamNumberFromKey(match.alliances.blue.team_keys[1])}</td>
+        <td>${teamNumberFromKey(match.alliances.blue.team_keys[2])}</td>
+        </tr >
+        `;
+
+      divisionText += matchesText
     });
+
+    divisionText += "</table><br><br>"
+    contentText += divisionText
   });
 
-  $('#matchInfo').html(header + matches)
+
+  $('#matchInfo').html(contentText)
 }
 
 function sortMatches(divisionKey) {
