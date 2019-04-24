@@ -18,6 +18,8 @@ var divisions = {
 //   "2019mosl": {}
 // }
 
+var districtTeams = []
+
 function init() {
   $("#doDistrictMatches").click(function (e) {
     var selectedDistrictKey = $("#districtKey").val();
@@ -30,6 +32,9 @@ function getTeamsForDistrict(districtKey) {
 
   $.getJSON(urlWithAuth(endpoint), function (teams) {
     teams = teams.sort();
+    teams.forEach(team => {
+      districtTeams.push(team)
+    });
     getTeamMatchesForChamps(teams)
   });
 }
@@ -107,12 +112,17 @@ function renderTableContents(title, division, renderEvent = false) {
         <td>Comp Level</td>
         <td>Match Number</td>
         <td>Time</td>
+
         <td>R1</td>
         <td>R2</td>
         <td>R3</td>
+
         <td>B1</td>
         <td>B2</td>
         <td>B3</td>
+
+        <td>Red RP</td>
+        <td>Blue RP</td>
       </tr>
     `;
 
@@ -121,6 +131,12 @@ function renderTableContents(title, division, renderEvent = false) {
 
     const d = new Date(match.time * 1000);
     const time = d.toLocaleTimeString();
+
+    let redTeamKeys = match.alliances.red.team_keys;
+    let blueTeamKeys = match.alliances.blue.team_keys;
+
+    let redRP = match.score_breakdown ? match.score_breakdown.red.rp : "---";
+    let blueRP = match.score_breakdown ? match.score_breakdown.blue.rp : "---";
 
     var matchesText = "";
 
@@ -133,13 +149,32 @@ function renderTableContents(title, division, renderEvent = false) {
           </td>
         <td>${time}</td>
 
-        <td>${teamNumberFromKey(match.alliances.red.team_keys[0])}</td>
-        <td>${teamNumberFromKey(match.alliances.red.team_keys[1])}</td>
-        <td>${teamNumberFromKey(match.alliances.red.team_keys[2])}</td>
+        <td class="${isDistrictTeam(redTeamKeys[0]) ? "redDistrictTeam" : ""}">
+          ${teamNumberFromKey(redTeamKeys[0])}
+        </td>
+        <td class="${isDistrictTeam(redTeamKeys[1]) ? "redDistrictTeam" : ""}">
+          ${teamNumberFromKey(redTeamKeys[1])}
+        </td>
+        <td class="${isDistrictTeam(redTeamKeys[2]) ? "redDistrictTeam" : ""}">
+          ${teamNumberFromKey(redTeamKeys[2])}
+        </td>
 
-        <td>${teamNumberFromKey(match.alliances.blue.team_keys[0])}</td>
-        <td>${teamNumberFromKey(match.alliances.blue.team_keys[1])}</td>
-        <td>${teamNumberFromKey(match.alliances.blue.team_keys[2])}</td>
+        <td class="${isDistrictTeam(blueTeamKeys[0]) ? "blueDistrictTeam" : ""}">
+          ${teamNumberFromKey(blueTeamKeys[0])}
+        </td>
+        <td class="${isDistrictTeam(blueTeamKeys[1]) ? "blueDistrictTeam" : ""}">
+          ${teamNumberFromKey(blueTeamKeys[1])}
+        </td>
+        <td class="${isDistrictTeam(blueTeamKeys[2]) ? "blueDistrictTeam" : ""}">
+          ${teamNumberFromKey(blueTeamKeys[2])}
+        </td>
+
+        <td>
+          ${(redRP != "---" && redRP != 0) ? "+" : ""}${redRP}
+        </td>
+        <td>
+          ${(blueRP != "---" && blueRP != 0) ? "+" : ""}${blueRP}
+        </td>
         </tr >
         `;
 
@@ -162,6 +197,10 @@ function selectedTeamKey(teamNumber) {
 
 function teamNumberFromKey(teamKey) {
   return teamKey.slice(3)
+}
+
+function isDistrictTeam(teamNumber) {
+  return districtTeams.includes(teamNumber)
 }
 
 function eventNameFrom(eventKey) {
