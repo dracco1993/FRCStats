@@ -3,19 +3,20 @@ $(document).ready(function () {
   init();
 });
 
-var divisions = {
-  "2019arc": {},
-  "2019cars": {},
-  "2019cur": {},
-  "2019dal": {},
-  "2019dar": {},
-  "2019tes": {},
-  "2019cmpmi": {}
-}
-
 // var divisions = {
-//   "2019alhu": {}
+//   "2019arc": {},
+//   "2019cars": {},
+//   "2019cur": {},
+//   "2019dal": {},
+//   "2019dar": {},
+//   "2019tes": {},
+//   "2019cmpmi": {}
 // }
+
+var divisions = {
+  "2019alhu": {},
+  "2019mosl": {}
+}
 
 function init() {
   $("#doDistrictMatches").click(function (e) {
@@ -60,8 +61,23 @@ function addMatches(matches) {
 function render() {
   let contentText = ""
   Object.keys(divisions).forEach(divisionKey => {
-    var divisionText = `
-      <h3>${divisionKey}</h3>
+    contentText += renderDivision(divisionKey)
+  });
+
+
+  $('#matchInfo').html(contentText)
+}
+
+function renderDivision(divisionKey) {
+  sortMatches(divisionKey)
+  let division = divisions[divisionKey]
+
+  return renderTableContents(divisionKey, division)
+}
+
+function renderTableContents(title, division) {
+  var result = `
+      <h3>${title}</h3>
       <table>
       <tr>
         <td>Comp Level</td>
@@ -76,18 +92,15 @@ function render() {
       </tr>
     `;
 
-    sortMatches(divisionKey)
-    let division = divisions[divisionKey]
+  Object.keys(division).forEach(matchKey => {
+    const match = divisions[title][matchKey]
 
-    Object.keys(division).forEach(matchKey => {
-      const match = divisions[divisionKey][matchKey]
+    const d = new Date(match.time * 1000);
+    const time = d.toLocaleTimeString();
 
-      const d = new Date(match.time * 1000);
-      const time = d.toLocaleTimeString();
+    var matchesText = "";
 
-      var matchesText = "";
-
-      matchesText += `
+    matchesText += `
         <tr>
           <td>${match.comp_level}</td>
           <td>
@@ -105,15 +118,11 @@ function render() {
         </tr >
         `;
 
-      divisionText += matchesText
-    });
-
-    divisionText += "</table><br><br>"
-    contentText += divisionText
+    result += matchesText
   });
 
-
-  $('#matchInfo').html(contentText)
+  result += "</table><br><br>"
+  return result
 }
 
 function sortMatches(divisionKey) {
