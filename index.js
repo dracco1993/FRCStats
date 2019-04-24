@@ -13,12 +13,12 @@ var divisions = {
   "2019cmpmi": {}
 }
 
-var districtTeams = []
-
 // var divisions = {
 //   "2019alhu": {},
 //   "2019mosl": {}
 // }
+
+var districtTeams = []
 
 function init() {
   $("#doDistrictMatches").click(function (e) {
@@ -112,12 +112,17 @@ function renderTableContents(title, division, renderEvent = false) {
         <td>Comp Level</td>
         <td>Match Number</td>
         <td>Time</td>
+
         <td>R1</td>
         <td>R2</td>
         <td>R3</td>
+
         <td>B1</td>
         <td>B2</td>
         <td>B3</td>
+
+        <td>Red RP</td>
+        <td>Blue RP</td>
       </tr>
     `;
 
@@ -129,6 +134,9 @@ function renderTableContents(title, division, renderEvent = false) {
 
     let redTeamKeys = match.alliances.red.team_keys;
     let blueTeamKeys = match.alliances.blue.team_keys;
+
+    let redRP = match.score_breakdown ? match.score_breakdown.red.rp : "---";
+    let blueRP = match.score_breakdown ? match.score_breakdown.blue.rp : "---";
 
     var matchesText = "";
 
@@ -159,6 +167,13 @@ function renderTableContents(title, division, renderEvent = false) {
         </td>
         <td class="${isDistrictTeam(blueTeamKeys[2]) ? "blueDistrictTeam" : ""}">
           ${teamNumberFromKey(blueTeamKeys[2])}
+        </td>
+
+        <td>
+          ${(redRP != "---" && redRP != 0) ? "+" : ""}${redRP}
+        </td>
+        <td>
+          ${(blueRP != "---" && blueRP != 0) ? "+" : ""}${blueRP}
         </td>
         </tr >
         `;
