@@ -13,6 +13,8 @@ var divisions = {
   "2019cmpmi": {}
 }
 
+var districtTeams = []
+
 // var divisions = {
 //   "2019alhu": {},
 //   "2019mosl": {}
@@ -30,6 +32,9 @@ function getTeamsForDistrict(districtKey) {
 
   $.getJSON(urlWithAuth(endpoint), function (teams) {
     teams = teams.sort();
+    teams.forEach(team => {
+      districtTeams.push(team)
+    });
     getTeamMatchesForChamps(teams)
   });
 }
@@ -122,6 +127,9 @@ function renderTableContents(title, division, renderEvent = false) {
     const d = new Date(match.time * 1000);
     const time = d.toLocaleTimeString();
 
+    let redTeamKeys = match.alliances.red.team_keys;
+    let blueTeamKeys = match.alliances.blue.team_keys;
+
     var matchesText = "";
 
     matchesText += `
@@ -133,13 +141,25 @@ function renderTableContents(title, division, renderEvent = false) {
           </td>
         <td>${time}</td>
 
-        <td>${teamNumberFromKey(match.alliances.red.team_keys[0])}</td>
-        <td>${teamNumberFromKey(match.alliances.red.team_keys[1])}</td>
-        <td>${teamNumberFromKey(match.alliances.red.team_keys[2])}</td>
+        <td class="${isDistrictTeam(redTeamKeys[0]) ? "redDistrictTeam" : ""}">
+          ${teamNumberFromKey(redTeamKeys[0])}
+        </td>
+        <td class="${isDistrictTeam(redTeamKeys[1]) ? "redDistrictTeam" : ""}">
+          ${teamNumberFromKey(redTeamKeys[1])}
+        </td>
+        <td class="${isDistrictTeam(redTeamKeys[2]) ? "redDistrictTeam" : ""}">
+          ${teamNumberFromKey(redTeamKeys[2])}
+        </td>
 
-        <td>${teamNumberFromKey(match.alliances.blue.team_keys[0])}</td>
-        <td>${teamNumberFromKey(match.alliances.blue.team_keys[1])}</td>
-        <td>${teamNumberFromKey(match.alliances.blue.team_keys[2])}</td>
+        <td class="${isDistrictTeam(blueTeamKeys[0]) ? "blueDistrictTeam" : ""}">
+          ${teamNumberFromKey(blueTeamKeys[0])}
+        </td>
+        <td class="${isDistrictTeam(blueTeamKeys[1]) ? "blueDistrictTeam" : ""}">
+          ${teamNumberFromKey(blueTeamKeys[1])}
+        </td>
+        <td class="${isDistrictTeam(blueTeamKeys[2]) ? "blueDistrictTeam" : ""}">
+          ${teamNumberFromKey(blueTeamKeys[2])}
+        </td>
         </tr >
         `;
 
@@ -162,6 +182,10 @@ function selectedTeamKey(teamNumber) {
 
 function teamNumberFromKey(teamKey) {
   return teamKey.slice(3)
+}
+
+function isDistrictTeam(teamNumber) {
+  return districtTeams.includes(teamNumber)
 }
 
 function eventNameFrom(eventKey) {

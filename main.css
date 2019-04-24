@@ -4,3 +4,13 @@
   border-collapse: collapse;
   padding: 3px;
 }
+
+.redDistrictTeam {
+  color: white;
+  background-color: red;
+}
+
+.blueDistrictTeam {
+  color: white;
+  background-color: blue;
+}
