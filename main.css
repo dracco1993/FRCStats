@@ -1,5 +1,6 @@
-#habStats td {
+#matchInfo td, #allMatchInfo td {
   text-align: center;
   border: 1px solid black;
   border-collapse: collapse;
+  padding: 3px;
 }
