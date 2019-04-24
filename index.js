@@ -3,43 +3,48 @@ $(document).ready(function () {
   init();
 });
 
-var stats = {
-  startingLocations: [],
-  climbingLocations: []
+var divisions = {
+  "2019ingre": {}
 }
 
 function init() {
-  // getDataForTeam(1741);
-
-  $("#doTeamStats").click(function (e) {
-    var selectedTeamNumber = $("#teamKey").val();
-    getDataForTeam(selectedTeamNumber);
-  })
-
-  $("#doEventStats").click(function (e) {
-    var selectedEventKey = $("#eventKey").val();
-    getTeamKeysForEvent(selectedEventKey);
+  $("#doDistrictMatches").click(function (e) {
+    var selectedDistrictKey = $("#districtKey").val();
+    getTeamsForDistrict(selectedDistrictKey);
   })
 }
 
-function getDataForTeam(teamNumber) {
-  var endpoint = `https://www.thebluealliance.com/api/v3/team/${selectedTeamKey(teamNumber)}/matches/2019`
-
-  $.getJSON(urlWithAuth(endpoint), function (matches) {
-    doStatsThings(teamNumber, matches);
-  });
-}
-
-function getTeamKeysForEvent(eventKey) {
-  var endpoint = `https://www.thebluealliance.com/api/v3/event/${eventKey}/teams/keys`;
+function getTeamsForDistrict(districtKey) {
+  var endpoint = `district/2019${districtKey}/teams/keys`
 
   $.getJSON(urlWithAuth(endpoint), function (teams) {
     teams = teams.sort();
-    for (let i = 0; i < teams.length; i++) {
-      var teamNumber = teams[i].slice(3);
-      getDataForTeam(teamNumber);
-    }
+    getTeamMatchesForChamps(teams)
   });
+}
+
+function getTeamMatchesForChamps(teams) {
+  for (let i = 0; i < teams.length; i++) {
+    var teamKey = teams[i]
+    getMatchesForTeam(teamKey);
+  }
+}
+
+function getMatchesForTeam(teamKey) {
+  Object.keys(divisions).forEach(eventKey => {
+    var endpoint = `team/${teamKey}/event/${eventKey}/matches`
+
+    $.getJSON(urlWithAuth(endpoint), function (matches) {
+      addMatches(matches)
+    });
+  });
+}
+
+function addMatches(matches) {
+  matches.forEach(match => {
+    divisions[match.event_key][match.key] = match
+  })
+  render()
 }
 
 function doStatsThings(teamNumber, matches) {
@@ -96,40 +101,45 @@ function doStatsThings(teamNumber, matches) {
 function render() {
   var header = `
     <tr>
-      <td>Team Number</td>
-      <td>S: HAB 2</td>
-      <td>S: HAB 1</td>
-      <td>S: None</td>
-      <td>C: HAB 3</td>
-      <td>C: HAB 2</td>
-      <td>C: HAB 1</td>
-      <td>C: None</td>
+      <td>Comp Level</td>
+      <td>Match Number</td>
+      <td>Time</td>
+      <td>R1</td>
+      <td>R2</td>
+      <td>R3</td>
+      <td>B1</td>
+      <td>B2</td>
+      <td>B3</td>
     </tr>
   `;
 
-  var teams = "";
-  for (let i = 0; i < stats.startingLocations.length; i++) {
-    const startingLocation = stats.startingLocations[i];
-    const climbingLocation = stats.climbingLocations[i];
-    console.log(climbingLocation.teamNumber);
-    console.log(climbingLocation.locations);
+  var matches = "";
 
-    teams += `
+  Object.keys(divisions).forEach(divisionKey => {
+    let division = divisions[divisionKey]
+    Object.keys(division).forEach(matchKey => {
+      const match = divisions[divisionKey][matchKey]
+
+
+      matches += `
       <tr>
-        <td>${startingLocation.teamNumber}</td>
-        <td>${startingLocation.locations["HabLevel2"]}</td>
-        <td>${startingLocation.locations["HabLevel1"]}</td>
-        <td>${startingLocation.locations["None"]}</td>
+        <td>${match.comp_level}</td>
+        <td>${match.match_number}</td>
+        <td>${match.time}</td>
 
-        <td>${climbingLocation.locations["HabLevel3"]}</td>
-        <td>${climbingLocation.locations["HabLevel2"]}</td>
-        <td>${climbingLocation.locations["HabLevel1"]}</td>
-        <td>${climbingLocation.locations["None"]}</td>
+        <td>${teamNumberFromKey(match.alliances.red.team_keys[0])}</td>
+        <td>${teamNumberFromKey(match.alliances.red.team_keys[1])}</td>
+        <td>${teamNumberFromKey(match.alliances.red.team_keys[2])}</td>
+
+        <td>${teamNumberFromKey(match.alliances.blue.team_keys[0])}</td>
+        <td>${teamNumberFromKey(match.alliances.blue.team_keys[1])}</td>
+        <td>${teamNumberFromKey(match.alliances.blue.team_keys[2])}</td>
       </tr>
     `;
-  }
+    });
+  });
 
-  $('#habStats').html(header + teams)
+  $('#matchInfo').html(header + matches)
 }
 
 function addCountToObject(object, key) {
@@ -182,7 +192,11 @@ function selectedTeamKey(teamNumber) {
   return `frc${teamNumber}`
 }
 
+function teamNumberFromKey(teamKey) {
+  return teamKey.slice(3)
+}
+
 function urlWithAuth(url) {
   var API_KEY = "ICh6EZ01IHFFi9oZuS4t6Q7sm1zcvZDf0BBCRkgpviQ0HYlcgYfupNUJhCAXqnIl"
-  return `${url}?X-TBA-Auth-Key=${API_KEY}`;
+  return `https://www.thebluealliance.com/api/v3/${url}?X-TBA-Auth-Key=${API_KEY}`;
 }
