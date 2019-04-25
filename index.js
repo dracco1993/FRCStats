@@ -24,10 +24,31 @@ var rankings = []
 var districtTeams = []
 
 function init() {
-  $("#doDistrictMatches").click(function (e) {
-    var selectedDistrictKey = $("#districtKey").val();
-    getTeamsForDistrict(selectedDistrictKey);
+  // Do a forced load on the initial page load
+  reset()
+
+  // Add the select change listener
+  $("#selectedDistrict").change(function (e) {
+    reset()
   })
+}
+
+function reset() {
+  // Reset all of the "global" variables
+  divisions = {
+    "2019arc": {},
+    "2019cars": {},
+    "2019cur": {},
+    "2019dal": {},
+    "2019dar": {},
+    "2019tes": {},
+    "2019cmpmi": {}
+  }
+  rankings = []
+  districtTeams = []
+
+  var selectedDistrictKey = $("#selectedDistrict").val();
+  getTeamsForDistrict(selectedDistrictKey);
 }
 
 function getRankingsFor(division) {
