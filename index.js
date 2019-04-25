@@ -60,29 +60,37 @@ function getTeamsForDistrict(districtKey) {
       districtTeams.push(team)
     });
 
-    // Get the rankings for each division
+    // Get the rankings and matches for each division
     Object.keys(divisions).forEach(division => {
-      getRankingsFor(division);
+      getRankingsFor(division)
+      getMatchesForDivision(division)
     });
-
-    getTeamMatchesForChamps(teams)
   });
 }
 
-function getTeamMatchesForChamps(teams) {
-  for (let i = 0; i < teams.length; i++) {
-    var teamKey = teams[i]
-    getMatchesForTeam(teamKey);
-  }
-}
+function getMatchesForDivision(division) {
+  var endpoint = `event/${division}/matches`
 
-function getMatchesForTeam(teamKey) {
-  Object.keys(divisions).forEach(eventKey => {
-    var endpoint = `team/${teamKey}/event/${eventKey}/matches`
+  $.getJSON(urlWithAuth(endpoint), function (matches) {
+    var districtMatches = []
 
-    $.getJSON(urlWithAuth(endpoint), function (matches) {
-      addMatches(matches)
+    matches.forEach(match => {
+      // Check to see if any of the match teams are in the district
+      // This is ugly, but it's not _terrible_
+      let isDistrictMatch =
+        isDistrictTeam(match.alliances.red.team_keys[0]) ||
+        isDistrictTeam(match.alliances.red.team_keys[1]) ||
+        isDistrictTeam(match.alliances.red.team_keys[2]) ||
+        isDistrictTeam(match.alliances.blue.team_keys[0]) ||
+        isDistrictTeam(match.alliances.blue.team_keys[1]) ||
+        isDistrictTeam(match.alliances.blue.team_keys[2])
+
+      if (isDistrictMatch) {
+        districtMatches.push(match)
+      }
     });
+
+    addMatches(districtMatches)
   });
 }
 
