@@ -29,6 +29,8 @@ function init() {
 
   // Add the select change listener
   $("#selectedDistrict").change(function (e) {
+    gtag('event', 'district_dimension', { 'district': $("#selectedDistrict").val() });
+
     reset()
   })
 }
