@@ -75,6 +75,41 @@ function getRankingsFor(division) {
 }
 
 function getTeamsForDistrict(districtKey) {
+  // Just a little hack for WOW
+  if (districtKey == "wow") {
+    districtTeams = [
+      "frc48",
+      "frc120",
+      "frc279",
+      "frc379",
+      "frc1317",
+      "frc1787",
+      "frc2614",
+      "frc3193",
+      "frc3324",
+      "frc3504",
+      "frc4027",
+      "frc4028",
+      "frc4145",
+      "frc4150",
+      "frc5667",
+      "frc5740",
+      "frc5811",
+      "frc6032",
+      "frc6964",
+      "frc7460",
+      "frc7515",
+      "frc7885"
+    ]
+
+    // Get the rankings and matches for each division
+    Object.keys(divisions).forEach(division => {
+      getRankingsFor(division)
+      getMatchesForDivision(division)
+    });
+    return
+  }
+
   var endpoint = `district/2019${districtKey}/teams/keys`
 
   $.getJSON(urlWithAuth(endpoint), function (teams) {
