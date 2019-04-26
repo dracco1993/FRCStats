@@ -1,5 +1,9 @@
 
 $(document).ready(function () {
+  // Set the default value from the cache, or just Indiana <3
+  var defaultSelection = localStorage.getItem('selectedDistrict') || "in"
+  $('#selectedDistrict').val(defaultSelection)
+
   init();
 });
 
@@ -50,6 +54,7 @@ function reset() {
   districtTeams = []
 
   var selectedDistrictKey = $("#selectedDistrict").val();
+  localStorage.setItem('selectedDistrict', selectedDistrictKey)
   getTeamsForDistrict(selectedDistrictKey);
 }
 
