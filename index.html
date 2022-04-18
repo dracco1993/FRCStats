@@ -1,59 +1,60 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <!-- Global site tag (gtag.js) - Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-139043789-1"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=UA-139043789-1"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
 
-    gtag('config', 'UA-139043789-1', {
-      'custom_map': { 'dimension1': 'district' }
-    });
-  </script>
+      gtag("config", "UA-139043789-1", {
+        custom_map: { dimension1: "district" },
+      });
+    </script>
 
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>FIRST Championship Detroit</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" type="text/css" media="screen" href="main.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="index.js"></script>
-</head>
-<body>
-  <div>District Lookup:</div>
-  <select id="selectedDistrict">
-    <option value="chs">FIRST Chesapeake</option>
-    <option value="fim">FIRST In Michigan</option>
-    <option value="fma">FIRST Mid-Atlantic</option>
-    <option value="in">Indiana FIRST</option>
-    <option value="isr">FIRST Israel</option>
-    <option value="ne">New England</option>
-    <option value="ont">Ontario</option>
-    <option value="wow">WOW District (unofficial)</option>
-
-    <!-- Houston Districts
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>2022 FIRST Championship</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="index.js"></script>
+  </head>
+  <body>
+    <div>District Lookup:</div>
+    <select id="selectedDistrict">
+      <option value="chs">FIRST Chesapeake</option>
+      <option value="fim">FIRST In Michigan</option>
+      <option value="fit">FIRST In Texas</option>
+      <option value="fin" selected>FIRST Indiana Robotics</option>
+      <option value="isr">FIRST Israel</option>
+      <option value="fma">FIRST Mid-Atlantic</option>
       <option value="fnc">FIRST North Carolina</option>
-      <option value="pch">Peachtree</option>
+      <option value="ne">New England</option>
+      <option value="ont">Ontario</option>
       <option value="pnw">Pacific Northwest</option>
-      <option value="tx">FIRST In Texas</option>
-    -->
-  </select>
+      <option value="pch">Peachtree</option>
+    </select>
 
-  <br>
-  <br>
+    <br />
+    <br />
 
-  <div id="rankInfo"></div>
+    <div id="rankInfo"></div>
 
-  <br>
-  <br>
+    <br />
+    <br />
 
-  <div id="matchInfo"></div>
+    <div id="matchInfo"></div>
 
-  <br>
-  <br>
+    <br />
+    <br />
 
-  <div id="allMatchInfo"></div>
-</body>
+    <div id="allMatchInfo"></div>
+  </body>
 </html>
