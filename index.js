@@ -83,7 +83,7 @@ function reset() {
 function getRankingsFor(division) {
   var endpoint = `event/${division}/rankings`;
 
-  $.getJSON(urlWithAuth(endpoint), function (rankingStats) {
+  getJSONWithSpinner(urlWithAuth(endpoint), function (rankingStats) {
     // If this division doesn't have rankings
     // please don't break the rest of them...
     if (rankingStats && rankingStats.rankings) {
@@ -139,7 +139,7 @@ function getTeamsForDistrict(districtKey) {
 
   var endpoint = `district/${YEAR}${districtKey}/teams/keys`;
 
-  $.getJSON(urlWithAuth(endpoint), function (teams) {
+  getJSONWithSpinner(urlWithAuth(endpoint), function (teams) {
     teams = teams.sort();
     teams.forEach((team) => {
       districtTeams.push(team);
@@ -156,7 +156,7 @@ function getTeamsForDistrict(districtKey) {
 function getMatchesForDivision(division) {
   var endpoint = `event/${division}/matches`;
 
-  $.getJSON(urlWithAuth(endpoint), function (matches) {
+  getJSONWithSpinner(urlWithAuth(endpoint), function (matches) {
     var districtMatches = [];
 
     matches.forEach((match) => {
@@ -392,4 +392,18 @@ function urlWithAuth(url) {
   var API_KEY =
     "ICh6EZ01IHFFi9oZuS4t6Q7sm1zcvZDf0BBCRkgpviQ0HYlcgYfupNUJhCAXqnIl";
   return `https://www.thebluealliance.com/api/v3/${url}?X-TBA-Auth-Key=${API_KEY}`;
+}
+
+var inFlightRequests = 0;
+function getJSONWithSpinner(url, callback) {
+  $("#spinner").show();
+  inFlightRequests++;
+
+  $.getJSON(url, callback).always(() => {
+    inFlightRequests--;
+
+    if (inFlightRequests == 0) {
+      $("#spinner").hide();
+    }
+  });
 }
