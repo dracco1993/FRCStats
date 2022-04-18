@@ -57,7 +57,7 @@ function init() {
   // Do a forced load on the initial page load
   reset();
 
-  // Add the select change listener
+  // Add the district select change listener
   $("#selectedDistrict").change(function (e) {
     gtag("event", "district_dimension", {
       district: $("#selectedDistrict").val(),
@@ -199,6 +199,9 @@ function render() {
   let rankingText = renderRankings();
   $("#rankInfo").html(rankingText);
 
+  // Add the select change listener
+  $(".colorSelect").change(onColorChange);
+
   // Render the division matches section
   let divisionListText = "";
   Object.keys(divisions).forEach((divisionKey) => {
@@ -219,7 +222,7 @@ function renderRankings() {
         <td>Team</td>
         <td>Rank</td>
         <td>Division</td>
-
+        <td>Color</td>
       </tr>
   `;
 
@@ -232,13 +235,20 @@ function renderRankings() {
     }
   });
 
+  const teamColors = JSON.parse(localStorage.getItem("teamColors")) || {};
+
   // Render the individual rows
   rankings.forEach((rank) => {
+    const teamColor = teamColors[rank.team_key] || "#ffffff";
     result += `
       <tr>
       <td>${teamNumberFromKey(rank.team_key)}</td>
       <td>${rank.rank}</td>
       <td>${eventNameFrom(rank.division)}</td>
+      <td>
+        <input id="${
+          rank.team_key
+        }" class="colorSelect" type="color" value="${teamColor}"></td>
       </tr>
     `;
   });
@@ -325,29 +335,23 @@ function renderTableContents(title, division, renderEvent = false) {
           </td>
         <td>${time}</td>
 
-        <td class="${isDistrictTeam(redTeamKeys[0]) ? "redDistrictTeam" : ""}">
+        <td style="background-color: ${getTeamColor(redTeamKeys[0], "red")}">
           ${teamNumberFromKey(redTeamKeys[0])}
         </td>
-        <td class="${isDistrictTeam(redTeamKeys[1]) ? "redDistrictTeam" : ""}">
+        <td style="background-color: ${getTeamColor(redTeamKeys[(1, "red")])}">
           ${teamNumberFromKey(redTeamKeys[1])}
         </td>
-        <td class="${isDistrictTeam(redTeamKeys[2]) ? "redDistrictTeam" : ""}">
+        <td style="background-color: ${getTeamColor(redTeamKeys[2], "red")}">
           ${teamNumberFromKey(redTeamKeys[2])}
         </td>
 
-        <td class="${
-          isDistrictTeam(blueTeamKeys[0]) ? "blueDistrictTeam" : ""
-        }">
+        <td style="background-color: ${getTeamColor(blueTeamKeys[0], "blue")}">
           ${teamNumberFromKey(blueTeamKeys[0])}
         </td>
-        <td class="${
-          isDistrictTeam(blueTeamKeys[1]) ? "blueDistrictTeam" : ""
-        }">
+        <td style="background-color: ${getTeamColor(blueTeamKeys[1], "blue")}">
           ${teamNumberFromKey(blueTeamKeys[1])}
         </td>
-        <td class="${
-          isDistrictTeam(blueTeamKeys[2]) ? "blueDistrictTeam" : ""
-        }">
+        <td style="background-color: ${getTeamColor(blueTeamKeys[2], "blue")}">
           ${teamNumberFromKey(blueTeamKeys[2])}
         </td>
 
@@ -365,6 +369,27 @@ function renderTableContents(title, division, renderEvent = false) {
 
   result += "</table><br><br>";
   return result;
+}
+
+function onColorChange(e) {
+  const teamKey = e.target.id;
+  const color = e.target.value;
+
+  let teamColors = JSON.parse(localStorage.getItem("teamColors")) || {};
+  teamColors[teamKey] = color;
+  localStorage.setItem("teamColors", JSON.stringify(teamColors));
+
+  // TODO: figure out what to rerender here
+  render();
+}
+
+function getTeamColor(teamKey, defaultColor) {
+  if (isDistrictTeam(teamKey)) {
+    const teamColors = JSON.parse(localStorage.getItem("teamColors")) || {};
+    return teamColors[teamKey] || defaultColor;
+  } else {
+    return "#ffffff";
+  }
 }
 
 function updateRankingsAndMatches() {
