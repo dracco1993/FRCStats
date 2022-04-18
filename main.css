@@ -1,4 +1,6 @@
-#rankInfo td, #matchInfo td, #allMatchInfo td {
+#rankInfo td,
+#matchInfo td,
+#allMatchInfo td {
   text-align: center;
   border: 1px solid black;
   border-collapse: collapse;
@@ -13,4 +15,9 @@
 .blueDistrictTeam {
   color: white;
   background-color: blue;
+}
+
+.matchWinner {
+  color: white;
+  background-color: green;
 }
