@@ -137,19 +137,27 @@ function getTeamsForDistrict(districtKey) {
   //   return
   // }
 
-  var endpoint = `district/${YEAR}${districtKey}/teams/keys`;
+  const fullKey = `${YEAR}${districtKey}`;
+  var endpoint = `district/${fullKey}/teams/keys`;
+
+  // Check to see if we've already cached this district's teams
+  let cachedTeams = JSON.parse(localStorage.getItem("districtTeams")) || {};
+  if (cachedTeams[fullKey]) {
+    districtTeams = cachedTeams[fullKey];
+
+    updateRankingsAndMatches();
+    return;
+  }
 
   getJSONWithSpinner(urlWithAuth(endpoint), function (teams) {
-    teams = teams.sort();
-    teams.forEach((team) => {
-      districtTeams.push(team);
-    });
+    districtTeams = teams.sort();
 
-    // Get the rankings and matches for each division
-    Object.keys(divisions).forEach((division) => {
-      getRankingsFor(division);
-      getMatchesForDivision(division);
-    });
+    // Cache the district teams, since those aren't changing
+    let cachedTeams = JSON.parse(localStorage.getItem("districtTeams")) || {};
+    cachedTeams[fullKey] = districtTeams;
+    localStorage.setItem("districtTeams", JSON.stringify(cachedTeams));
+
+    updateRankingsAndMatches();
   });
 }
 
@@ -357,6 +365,14 @@ function renderTableContents(title, division, renderEvent = false) {
 
   result += "</table><br><br>";
   return result;
+}
+
+function updateRankingsAndMatches() {
+  // Get the rankings and matches for each division
+  Object.keys(divisions).forEach((division) => {
+    getRankingsFor(division);
+    getMatchesForDivision(division);
+  });
 }
 
 function sortMatches(division) {
