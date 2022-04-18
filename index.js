@@ -43,6 +43,7 @@ $(document).ready(function () {
   // Set the default value from the cache, or just Indiana <3
   var defaultSelection = localStorage.getItem("selectedDistrict") || "fin";
   $("#selectedDistrict").val(defaultSelection);
+  location.hash = defaultSelection;
 
   init();
 });
@@ -62,6 +63,8 @@ function init() {
     gtag("event", "district_dimension", {
       district: $("#selectedDistrict").val(),
     });
+
+    location.hash = $("#selectedDistrict").val();
 
     reset();
   });
