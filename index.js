@@ -202,8 +202,11 @@ function render() {
   let rankingText = renderRankings();
   $("#rankInfo").html(rankingText);
 
-  // Add the select change listener
+  // Add the color select change listener
   $(".colorSelect").change(onColorChange);
+
+  // Add the color clear listener
+  $(".colorClear").click(onColorClear);
 
   // Render the division matches section
   let divisionListText = "";
@@ -245,13 +248,15 @@ function renderRankings() {
     const teamColor = teamColors[rank.team_key] || "#ffffff";
     result += `
       <tr>
-      <td>${teamNumberFromKey(rank.team_key)}</td>
-      <td>${rank.rank}</td>
-      <td>${eventNameFrom(rank.division)}</td>
-      <td>
-        <input id="${
-          rank.team_key
-        }" class="colorSelect" type="color" value="${teamColor}"></td>
+        <td>${teamNumberFromKey(rank.team_key)}</td>
+        <td>${rank.rank}</td>
+        <td>${eventNameFrom(rank.division)}</td>
+        <td>
+          <input id="${
+            rank.team_key
+          }" class="colorSelect" type="color" value="${teamColor}">
+          <button class="colorClear" id="${rank.team_key}">&#10006;</button>
+        </td>
       </tr>
     `;
   });
@@ -327,6 +332,14 @@ function renderTableContents(title, division, renderEvent = false) {
 
     var matchesText = "";
 
+    const r1Color = getTeamColor(redTeamKeys[0], "red");
+    const r2Color = getTeamColor(redTeamKeys[1], "red");
+    const r3Color = getTeamColor(redTeamKeys[2], "red");
+
+    const b1Color = getTeamColor(blueTeamKeys[0], "blue");
+    const b2Color = getTeamColor(blueTeamKeys[1], "blue");
+    const b3Color = getTeamColor(blueTeamKeys[2], "blue");
+
     matchesText += `
         <tr>
           ${renderEvent ? `<td>${eventNameFrom(match.event_key)}</td>` : ""}
@@ -338,23 +351,23 @@ function renderTableContents(title, division, renderEvent = false) {
           </td>
         <td>${time}</td>
 
-        <td style="background-color: ${getTeamColor(redTeamKeys[0], "red")}">
+        <td style="background-color: ${r1Color}; color: ${textColor(r1Color)}">
           ${teamNumberFromKey(redTeamKeys[0])}
         </td>
-        <td style="background-color: ${getTeamColor(redTeamKeys[(1, "red")])}">
+        <td style="background-color: ${r2Color}; color: ${textColor(r2Color)}">
           ${teamNumberFromKey(redTeamKeys[1])}
         </td>
-        <td style="background-color: ${getTeamColor(redTeamKeys[2], "red")}">
+        <td style="background-color: ${r3Color}; color: ${textColor(r3Color)}">
           ${teamNumberFromKey(redTeamKeys[2])}
         </td>
 
-        <td style="background-color: ${getTeamColor(blueTeamKeys[0], "blue")}">
+        <td style="background-color: ${b1Color}; color: ${textColor(b1Color)}">
           ${teamNumberFromKey(blueTeamKeys[0])}
         </td>
-        <td style="background-color: ${getTeamColor(blueTeamKeys[1], "blue")}">
+        <td style="background-color: ${b2Color}; color: ${textColor(b2Color)}">
           ${teamNumberFromKey(blueTeamKeys[1])}
         </td>
-        <td style="background-color: ${getTeamColor(blueTeamKeys[2], "blue")}">
+        <td style="background-color: ${b3Color}; color: ${textColor(b3Color)}">
           ${teamNumberFromKey(blueTeamKeys[2])}
         </td>
 
@@ -386,6 +399,17 @@ function onColorChange(e) {
   render();
 }
 
+function onColorClear(e) {
+  const teamKey = e.target.id;
+
+  let teamColors = JSON.parse(localStorage.getItem("teamColors")) || {};
+  delete teamColors[teamKey];
+  localStorage.setItem("teamColors", JSON.stringify(teamColors));
+
+  // TODO: figure out what to rerender here
+  render();
+}
+
 function getTeamColor(teamKey, defaultColor) {
   if (isDistrictTeam(teamKey)) {
     const teamColors = JSON.parse(localStorage.getItem("teamColors")) || {};
@@ -393,6 +417,19 @@ function getTeamColor(teamKey, defaultColor) {
   } else {
     return "#ffffff";
   }
+}
+
+function textColor(bgColor) {
+  bgColor = bgColor.replace("#", "");
+
+  var aRgbHex = bgColor.match(/.{1,2}/g);
+
+  var r = parseInt(aRgbHex[0], 16);
+  var g = parseInt(aRgbHex[1], 16);
+  var b = parseInt(aRgbHex[2], 16);
+
+  var yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 128 ? "black" : "white";
 }
 
 function updateRankingsAndMatches() {
