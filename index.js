@@ -1,5 +1,5 @@
 // const YEAR = 2022;
-const YEAR = 2019;
+const YEAR = 2018;
 
 const DIVISIONS = [
   {
@@ -27,6 +27,18 @@ const DIVISIONS = [
     key: "tur",
   },
 ];
+
+const defaultTeamColors = {
+  frc829: "#F6D284",
+  frc1555: "#51BBF6",
+  frc1741: "#dd3333",
+  frc4926: "#50D017",
+  frc5484: "#e67958",
+  frc7457: "#c78c35",
+  frc7617: "#0548a9",
+  frc8742: "#241e20",
+  frc1414: "#ff00ff",
+};
 
 function buildDefaultDivisions() {
   var result = {};
@@ -412,7 +424,8 @@ function onColorClear(e) {
 
 function getTeamColor(teamKey, defaultColor) {
   if (isDistrictTeam(teamKey)) {
-    const teamColors = JSON.parse(localStorage.getItem("teamColors")) || {};
+    const teamColors =
+      JSON.parse(localStorage.getItem("teamColors")) || defaultTeamColors;
     return teamColors[teamKey] || defaultColor;
   } else {
     return "#ffffff";
