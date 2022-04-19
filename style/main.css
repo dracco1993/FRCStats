@@ -21,3 +21,8 @@
   color: white;
   background-color: green;
 }
+
+.section {
+  float: left;
+  padding-right: 15px;;
+}

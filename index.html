@@ -14,7 +14,10 @@
       gtag("js", new Date());
 
       gtag("config", "G-TQEEYG0T0M", {
-        custom_map: { dimension1: "district" },
+        custom_map: {
+          dimension1: "district",
+          dimension2: "year",
+        },
       });
     </script>
 
@@ -38,20 +41,31 @@
     <script src="index.js"></script>
   </head>
   <body>
-    <div>District Lookup:</div>
-    <select id="selectedDistrict">
-      <option value="chs">FIRST Chesapeake</option>
-      <option value="fim">FIRST In Michigan</option>
-      <option value="fit">FIRST In Texas</option>
-      <option value="fin">FIRST Indiana Robotics</option>
-      <option value="isr">FIRST Israel</option>
-      <option value="fma">FIRST Mid-Atlantic</option>
-      <option value="fnc">FIRST North Carolina</option>
-      <option value="ne">New England</option>
-      <option value="ont">Ontario</option>
-      <option value="pnw">Pacific Northwest</option>
-      <option value="pch">Peachtree</option>
-    </select>
+    <div class="section">
+      <div>Year:</div>
+      <select id="selectedYear">
+        <option value="2022">2022</option>
+        <option value="2019">2019</option>
+        <option value="2018">2018</option>
+      </select>
+    </div>
+
+    <div class="section">
+      <div>District:</div>
+      <select id="selectedDistrict">
+        <option value="chs">FIRST Chesapeake</option>
+        <option value="fim">FIRST In Michigan</option>
+        <option value="fit">FIRST In Texas</option>
+        <option value="fin">FIRST Indiana Robotics</option>
+        <option value="isr">FIRST Israel</option>
+        <option value="fma">FIRST Mid-Atlantic</option>
+        <option value="fnc">FIRST North Carolina</option>
+        <option value="ne">New England</option>
+        <option value="ont">Ontario</option>
+        <option value="pnw">Pacific Northwest</option>
+        <option value="pch">Peachtree</option>
+      </select>
+    </div>
 
     <br />
     <br />

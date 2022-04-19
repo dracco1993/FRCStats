@@ -1,5 +1,5 @@
 // const YEAR = 2022;
-const YEAR = 2018;
+// const YEAR = 2019;
 
 const DIVISIONS = [
   {
@@ -37,14 +37,13 @@ const defaultTeamColors = {
   frc7457: "#c78c35",
   frc7617: "#0548a9",
   frc8742: "#241e20",
-  frc1414: "#ff00ff",
 };
 
 function buildDefaultDivisions() {
   var result = {};
 
   DIVISIONS.map((division) => {
-    const key = `${YEAR}${division.key}`;
+    const key = `${selectedYear}${division.key}`;
     result[key] = {};
   });
 
@@ -53,12 +52,18 @@ function buildDefaultDivisions() {
 
 $(document).ready(function () {
   // Set the default value from the cache, or just Indiana <3
-  var defaultSelection = localStorage.getItem("selectedDistrict") || "fin";
-  $("#selectedDistrict").val(defaultSelection);
-  location.hash = defaultSelection;
+  var defaultDistrict = localStorage.getItem("selectedDistrict") || "fin";
+  $("#selectedDistrict").val(defaultDistrict);
+  location.hash = defaultDistrict;
+
+  var defaultYear = localStorage.getItem("selectedYear") || "2022";
+  $("#selectedYear").val(defaultYear);
+  selectedYear = defaultYear;
 
   init();
 });
+
+var selectedYear = 2022;
 
 var divisions = buildDefaultDivisions();
 
@@ -67,6 +72,13 @@ var rankings = [];
 var districtTeams = [];
 
 function init() {
+  // Load the default colors
+  const teamColors = {
+    ...defaultTeamColors,
+    ...JSON.parse(localStorage.getItem("teamColors")),
+  };
+  localStorage.setItem("teamColors", JSON.stringify(teamColors));
+
   // Do a forced load on the initial page load
   reset();
 
@@ -80,17 +92,29 @@ function init() {
 
     reset();
   });
+
+  // Add the year select change listener
+  $("#selectedYear").change(function (e) {
+    gtag("event", "year_dimension", {
+      year: $("#selectedYear").val(),
+    });
+
+    reset();
+  });
 }
 
 function reset() {
   // Reset all of the "global" variables
-  divisions = buildDefaultDivisions();
-
   rankings = [];
   districtTeams = [];
 
   var selectedDistrictKey = $("#selectedDistrict").val();
   localStorage.setItem("selectedDistrict", selectedDistrictKey);
+
+  selectedYear = $("#selectedYear").val();
+  localStorage.setItem("selectedYear", selectedYear);
+
+  divisions = buildDefaultDivisions();
 
   getTeamsForDistrict(selectedDistrictKey);
 }
@@ -152,7 +176,7 @@ function getTeamsForDistrict(districtKey) {
   //   return
   // }
 
-  const fullKey = `${YEAR}${districtKey}`;
+  const fullKey = `${selectedYear}${districtKey}`;
   var endpoint = `district/${fullKey}/teams/keys`;
 
   // Check to see if we've already cached this district's teams
@@ -253,7 +277,7 @@ function renderRankings() {
     }
   });
 
-  const teamColors = JSON.parse(localStorage.getItem("teamColors")) || {};
+  const teamColors = JSON.parse(localStorage.getItem("teamColors"));
 
   // Render the individual rows
   rankings.forEach((rank) => {
@@ -403,7 +427,7 @@ function onColorChange(e) {
   const teamKey = e.target.id;
   const color = e.target.value;
 
-  let teamColors = JSON.parse(localStorage.getItem("teamColors")) || {};
+  let teamColors = JSON.parse(localStorage.getItem("teamColors"));
   teamColors[teamKey] = color;
   localStorage.setItem("teamColors", JSON.stringify(teamColors));
 
@@ -424,8 +448,7 @@ function onColorClear(e) {
 
 function getTeamColor(teamKey, defaultColor) {
   if (isDistrictTeam(teamKey)) {
-    const teamColors =
-      JSON.parse(localStorage.getItem("teamColors")) || defaultTeamColors;
+    const teamColors = JSON.parse(localStorage.getItem("teamColors"));
     return teamColors[teamKey] || defaultColor;
   } else {
     return "#ffffff";
