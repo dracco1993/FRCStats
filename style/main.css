@@ -22,12 +22,12 @@
   background-color: green;
 }
 
+.navItem {
+  float: right;
+  margin-right: 15px;
+}
+
 /* .section {
   float: left;
   padding-right: 15px;;
 } */
-
-.p-2 {
-  /* border: 1px solid black; */
-  /* text-align: center; */
-}
