@@ -336,10 +336,10 @@ function renderAllMatches() {
 }
 
 function renderTableContents(title, division, renderEvent = false) {
+  const eventName = eventNameFrom(title);
   var result = `
-      <h3>${eventNameFrom(title)} ${
-    title != eventNameFrom(title) ? `(${title})` : ""
-  }</h3>
+      <h2>${eventName} ${title != eventName ? `(${title})` : ""}
+      </h2>
       <table class="table table-responsive table-striped table-bordered">
         <thead class="thead-dark">
           <tr>
@@ -378,13 +378,13 @@ function renderTableContents(title, division, renderEvent = false) {
 
     var matchesText = "";
 
-    const r1Color = getTeamColor(redTeamKeys[0], "red");
-    const r2Color = getTeamColor(redTeamKeys[1], "red");
-    const r3Color = getTeamColor(redTeamKeys[2], "red");
+    const r1Color = getTeamColor(redTeamKeys[0], "#ff0000");
+    const r2Color = getTeamColor(redTeamKeys[1], "#ff0000");
+    const r3Color = getTeamColor(redTeamKeys[2], "#ff0000");
 
-    const b1Color = getTeamColor(blueTeamKeys[0], "blue");
-    const b2Color = getTeamColor(blueTeamKeys[1], "blue");
-    const b3Color = getTeamColor(blueTeamKeys[2], "blue");
+    const b1Color = getTeamColor(blueTeamKeys[0], "#0000ff");
+    const b2Color = getTeamColor(blueTeamKeys[1], "#0000ff");
+    const b3Color = getTeamColor(blueTeamKeys[2], "#0000ff");
 
     matchesText += `
         <tr>
@@ -397,25 +397,13 @@ function renderTableContents(title, division, renderEvent = false) {
           </td>
         <td>${time}</td>
 
-        <td style="background-color: ${r1Color}; color: ${textColor(r1Color)}">
-          ${teamNumberFromKey(redTeamKeys[0])}
-        </td>
-        <td style="background-color: ${r2Color}; color: ${textColor(r2Color)}">
-          ${teamNumberFromKey(redTeamKeys[1])}
-        </td>
-        <td style="background-color: ${r3Color}; color: ${textColor(r3Color)}">
-          ${teamNumberFromKey(redTeamKeys[2])}
-        </td>
+        ${makeTeamColorCell(r1Color, redTeamKeys[0])}
+        ${makeTeamColorCell(r2Color, redTeamKeys[1])}
+        ${makeTeamColorCell(r3Color, redTeamKeys[2])}
 
-        <td style="background-color: ${b1Color}; color: ${textColor(b1Color)}">
-          ${teamNumberFromKey(blueTeamKeys[0])}
-        </td>
-        <td style="background-color: ${b2Color}; color: ${textColor(b2Color)}">
-          ${teamNumberFromKey(blueTeamKeys[1])}
-        </td>
-        <td style="background-color: ${b3Color}; color: ${textColor(b3Color)}">
-          ${teamNumberFromKey(blueTeamKeys[2])}
-        </td>
+        ${makeTeamColorCell(b1Color, blueTeamKeys[0])}
+        ${makeTeamColorCell(b2Color, blueTeamKeys[1])}
+        ${makeTeamColorCell(b3Color, blueTeamKeys[2])}
 
         <td ${
           winner == "red"
@@ -439,6 +427,20 @@ function renderTableContents(title, division, renderEvent = false) {
 
   result += "</tbody></table><br><br>";
   return result;
+}
+
+function makeTeamColorCell(teamColor, teamKey) {
+  return `
+    <td ${
+      teamColor
+        ? `style=\"background-color: ${teamColor}; color: ${textColor(
+            teamColor
+          )}"`
+        : ""
+    }>
+      ${teamNumberFromKey(teamKey)}
+    </td>
+  `;
 }
 
 function onColorChange(e) {
@@ -468,9 +470,10 @@ function getTeamColor(teamKey, defaultColor) {
   if (isDistrictTeam(teamKey)) {
     const teamColors = JSON.parse(localStorage.getItem("teamColors"));
     return teamColors[teamKey] || defaultColor;
-  } else {
-    return "#ffffff";
   }
+  // else {
+  //   return "#ffffff";
+  // }
 }
 
 function textColor(bgColor) {
