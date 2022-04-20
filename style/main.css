@@ -1,11 +1,11 @@
-#rankInfo td,
+/* #rankInfo td,
 #matchInfo td,
 #allMatchInfo td {
   text-align: center;
   border: 1px solid black;
   border-collapse: collapse;
   padding: 3px;
-}
+} */
 
 .redDistrictTeam {
   color: white;
@@ -22,7 +22,12 @@
   background-color: green;
 }
 
-.section {
+/* .section {
   float: left;
   padding-right: 15px;;
+} */
+
+.p-2 {
+  /* border: 1px solid black; */
+  /* text-align: center; */
 }

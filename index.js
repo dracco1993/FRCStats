@@ -259,13 +259,16 @@ function render() {
 function renderRankings() {
   let result = `
     <h3>Rankings</h3>
-    <table>
-      <tr>
-        <td>Team</td>
-        <td>Rank</td>
-        <td>Division</td>
-        <td>Color</td>
-      </tr>
+    <table class="table table-responsive table-striped table-bordered">
+      <thead class="thead-dark">
+        <tr>
+          <th>Team</th>
+          <th>Rank</th>
+          <th>Division</th>
+          <th>Color</td>
+        </tr>
+      </thead>
+      <tbody>
   `;
 
   // Sort by rank first, then team number
@@ -291,13 +294,15 @@ function renderRankings() {
           <input id="${
             rank.team_key
           }" class="colorSelect" type="color" value="${teamColor}">
-          <button class="colorClear" id="${rank.team_key}">&#10006;</button>
+          <button id="${
+            rank.team_key
+          }" type="button" class="btn-close colorClear" aria-label="Close"></button>
         </td>
       </tr>
     `;
   });
 
-  result += "</table><br>";
+  result += "</tbody></table><br>";
 
   return result;
 }
@@ -332,25 +337,30 @@ function renderAllMatches() {
 
 function renderTableContents(title, division, renderEvent = false) {
   var result = `
-      <h3>${eventNameFrom(title)} (${title})</h3>
-      <table>
-      <tr>
-        ${renderEvent ? "<td>Event</td>" : ""}
-        <td>Comp Level</td>
-        <td>Match Number</td>
-        <td>Time</td>
+      <h3>${eventNameFrom(title)} ${
+    title != eventNameFrom(title) ? `(${title})` : ""
+  }</h3>
+      <table class="table table-responsive table-striped table-bordered">
+        <thead class="thead-dark">
+          <tr>
+            ${renderEvent ? "<td>Event</td>" : ""}
+            <th>Comp Level</th>
+            <th>Match Number</th>
+            <th>Time</th>
 
-        <td>R1</td>
-        <td>R2</td>
-        <td>R3</td>
+            <th>R1</th>
+            <th>R2</th>
+            <th>R3</th>
 
-        <td>B1</td>
-        <td>B2</td>
-        <td>B3</td>
+            <th>B1</th>
+            <th>B2</th>
+            <th>B3</th>
 
-        <td>Red RP</td>
-        <td>Blue RP</td>
-      </tr>
+            <th>Red RP</th>
+            <th>Blue RP</th>
+          </tr>
+        </thead>
+      <tbody>
     `;
 
   Object.keys(division).forEach((matchKey) => {
@@ -407,10 +417,18 @@ function renderTableContents(title, division, renderEvent = false) {
           ${teamNumberFromKey(blueTeamKeys[2])}
         </td>
 
-        <td class="${winner == "red" ? "matchWinner" : ""}">
+        <td ${
+          winner == "red"
+            ? 'style="background-color: green; color: white;"'
+            : ""
+        }>
           ${redRP != "---" && redRP != 0 ? "+" : ""}${redRP}
         </td>
-        <td class="${winner == "blue" ? "matchWinner" : ""}">
+        <td ${
+          winner == "blue"
+            ? 'style="background-color: green; color: white;"'
+            : ""
+        }>
           ${blueRP != "---" && blueRP != 0 ? "+" : ""}${blueRP}
         </td>
         </tr >
@@ -419,7 +437,7 @@ function renderTableContents(title, division, renderEvent = false) {
     result += matchesText;
   });
 
-  result += "</table><br><br>";
+  result += "</tbody></table><br><br>";
   return result;
 }
 
