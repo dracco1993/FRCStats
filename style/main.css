@@ -27,6 +27,11 @@
   margin-right: 15px;
 }
 
+#content {
+  max-height: 90vh;
+  overflow-y: scroll;
+}
+
 /* .section {
   float: left;
   padding-right: 15px;;

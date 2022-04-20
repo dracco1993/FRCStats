@@ -254,6 +254,12 @@ function render() {
   // Render the all matches section
   let allMatchText = renderAllMatches();
   $("#allMatchInfo").html(allMatchText);
+
+  document.getElementById("content").scrollTo(0, 0);
+
+  var scrollSpyContentEl = document.getElementById("content");
+  var scrollSpy = bootstrap.ScrollSpy.getOrCreateInstance(scrollSpyContentEl);
+  scrollSpy.refresh();
 }
 
 function renderRankings() {
@@ -338,29 +344,29 @@ function renderAllMatches() {
 function renderTableContents(title, division, renderEvent = false) {
   const eventName = eventNameFrom(title);
   var result = `
-      <h2>${eventName} ${title != eventName ? `(${title})` : ""}
-      </h2>
-      <table class="table table-responsive table-striped table-bordered">
-        <thead class="thead-dark">
-          <tr>
-            ${renderEvent ? "<td>Event</td>" : ""}
-            <th>Comp Level</th>
-            <th>Match Number</th>
-            <th>Time</th>
+      <div id="${eventName}">
+        <h2>${eventName} ${title != eventName ? `(${title})` : ""}</h2>
+        <table class="table table-responsive table-striped table-bordered">
+          <thead class="thead-dark">
+            <tr>
+              ${renderEvent ? "<td>Event</td>" : ""}
+              <th>Comp Level</th>
+              <th>Match Number</th>
+              <th>Time</th>
 
-            <th>R1</th>
-            <th>R2</th>
-            <th>R3</th>
+              <th>R1</th>
+              <th>R2</th>
+              <th>R3</th>
 
-            <th>B1</th>
-            <th>B2</th>
-            <th>B3</th>
+              <th>B1</th>
+              <th>B2</th>
+              <th>B3</th>
 
-            <th>Red RP</th>
-            <th>Blue RP</th>
-          </tr>
-        </thead>
-      <tbody>
+              <th>Red RP</th>
+              <th>Blue RP</th>
+            </tr>
+          </thead>
+        <tbody>
     `;
 
   Object.keys(division).forEach((matchKey) => {
@@ -425,7 +431,7 @@ function renderTableContents(title, division, renderEvent = false) {
     result += matchesText;
   });
 
-  result += "</tbody></table><br><br>";
+  result += "</tbody></table></div><br><br>";
   return result;
 }
 
