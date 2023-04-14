@@ -55,14 +55,14 @@ $(document).ready(function () {
   var defaultDistrict = localStorage.getItem("selectedDistrict") || "fin";
   $("#selectedDistrict").val(defaultDistrict);
 
-  var defaultYear = localStorage.getItem("selectedYear") || "2022";
+  var defaultYear = localStorage.getItem("selectedYear") || "2023";
   $("#selectedYear").val(defaultYear);
   selectedYear = defaultYear;
 
   init();
 });
 
-var selectedYear = 2022;
+var selectedYear = 2023;
 
 var divisions = buildDefaultDivisions();
 
