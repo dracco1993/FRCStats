@@ -3,8 +3,16 @@
 
 const DIVISIONS = [
   {
-    name: "Carver",
-    key: "carv",
+    name: "Archimedes",
+    key: "arc",
+  },
+  {
+    name: "Curie",
+    key: "cur",
+  },
+  {
+    name: "Daly",
+    key: "dal",
   },
   {
     name: "Galileo",
@@ -15,16 +23,16 @@ const DIVISIONS = [
     key: "hop",
   },
   {
+    name: "Johnson",
+    key: "joh",
+  },
+  {
+    name: "Milstein",
+    key: "mil",
+  },
+  {
     name: "Newton",
     key: "new",
-  },
-  {
-    name: "Roebling",
-    key: "roe",
-  },
-  {
-    name: "Turing",
-    key: "tur",
   },
 ];
 
