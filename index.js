@@ -348,9 +348,10 @@ function renderAllMatches() {
 
 function renderTableContents(title, division, renderEvent = false) {
   const eventName = eventNameFrom(title);
+  const eventLink = `<a href="https://www.thebluealliance.com/event/${title}" target="_blank">${title}</a>`;
   var result = `
       <div id="${eventName}">
-        <h2>${eventName} ${title != eventName ? `(${title})` : ""}</h2>
+        <h2>${eventName} ${title != eventName ? `(${eventLink})` : ""}</h2>
         <table class="table table-responsive table-striped table-bordered">
           <thead class="thead-dark">
             <tr>
