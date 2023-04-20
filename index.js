@@ -43,7 +43,7 @@ const defaultTeamColors = {
   frc1501: "#9ebbd6",
   frc3940: "#662c91",
   frc4272: "#801819",
-  frc5010: "#cc672c",
+  frc5010: "#FF5010",
   frc6721: "#e73685",
   // frc7457: "#c78c35",
   frc7617: "#ce9c1a",
@@ -95,8 +95,8 @@ var districtTeams = [];
 function init() {
   // Load the default colors
   const teamColors = {
-    ...defaultTeamColors,
     ...JSON.parse(localStorage.getItem("teamColors")),
+    ...defaultTeamColors,
   };
   localStorage.setItem("teamColors", JSON.stringify(teamColors));
 
