@@ -37,6 +37,20 @@ const DIVISIONS = [
 ];
 
 const defaultTeamColors = {
+  // 2023
+  frc135: "#d7c353",
+  frc461: "#c69b08",
+  frc1501: "#9ebbd6",
+  frc3940: "#662c91",
+  frc4272: "#801819",
+  frc5010: "#cc672c",
+  frc6721: "#e73685",
+  // frc7457: "#c78c35",
+  frc7617: "#ce9c1a",
+  frc7657: "#cd5828",
+  frc9071: "#ff6700",
+
+  // 2022
   frc829: "#F6D284",
   frc1555: "#51BBF6",
   frc1741: "#dd3333",
