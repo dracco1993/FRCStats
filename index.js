@@ -312,7 +312,7 @@ function renderRankings() {
     const teamColor = teamColors[rank.team_key] || "#ffffff";
     result += `
       <tr>
-        <td>${teamNumberFromKey(rank.team_key)}</td>
+        <td>${teamNumberFromKey(rank.team_key, true)}</td>
         <td>${rank.rank}</td>
         <td>${eventNameFrom(rank.division)}</td>
         <td>
@@ -417,9 +417,10 @@ function renderTableContents(title, division, renderEvent = false) {
           ${renderEvent ? `<td>${eventNameFrom(match.event_key)}</td>` : ""}
           <td>${match.comp_level}</td>
           <td>
-            ${match.match_number}${
-      match.comp_level != "qm" ? `-${match.set_number}` : ""
-    }
+            <a href="https://www.thebluealliance.com/match/${matchKey}" target="_blank">
+              ${match.match_number}
+              ${match.comp_level != "qm" ? `-${match.set_number}` : ""}
+            </a>
           </td>
         <td>${time}</td>
 
@@ -464,7 +465,7 @@ function makeTeamColorCell(teamColor, teamKey) {
           )}"`
         : ""
     }>
-      ${teamNumberFromKey(teamKey)}
+      ${teamNumberFromKey(teamKey, true)}
     </td>
   `;
 }
@@ -535,8 +536,18 @@ function selectedTeamKey(teamNumber) {
   return `frc${teamNumber}`;
 }
 
-function teamNumberFromKey(teamKey) {
-  return teamKey.slice(3);
+function teamNumberFromKey(teamKey, shouldLink = false) {
+  const teamNumber = teamKey.slice(3);
+
+  if (shouldLink) {
+    return `
+      <a href="https://www.thebluealliance.com/team/${teamNumber}" target="_blank" style="color:white;">
+        ${teamNumber}
+      </a>
+    `;
+  }
+
+  return teamNumber;
 }
 
 function isDistrictTeam(teamNumber) {
