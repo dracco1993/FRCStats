@@ -382,6 +382,9 @@ function renderTableContents(title, division, renderEvent = false) {
               <th>B2</th>
               <th>B3</th>
 
+              <th>Red Score</th>
+              <th>Blue Score</th>
+
               <th>Red RP</th>
               <th>Blue RP</th>
             </tr>
@@ -397,6 +400,15 @@ function renderTableContents(title, division, renderEvent = false) {
 
     let redTeamKeys = match.alliances.red.team_keys;
     let blueTeamKeys = match.alliances.blue.team_keys;
+
+    console.log(match.score_breakdown);
+
+    let redScore = match.score_breakdown
+      ? match.score_breakdown.red.totalPoints
+      : "---";
+    let blueScore = match.score_breakdown
+      ? match.score_breakdown.blue.totalPoints
+      : "---";
 
     let redRP = match.score_breakdown ? match.score_breakdown.red.rp : "---";
     let blueRP = match.score_breakdown ? match.score_breakdown.blue.rp : "---";
@@ -437,13 +449,20 @@ function renderTableContents(title, division, renderEvent = false) {
             ? 'style="background-color: green; color: white;"'
             : ""
         }>
-          ${redRP != "---" && redRP != 0 ? "+" : ""}${redRP}
+          ${redScore}
         </td>
         <td ${
           winner == "blue"
             ? 'style="background-color: green; color: white;"'
             : ""
         }>
+          ${blueScore}
+        </td>
+
+        <td>
+          ${redRP != "---" && redRP != 0 ? "+" : ""}${redRP}
+        </td>
+        <td>
           ${blueRP != "---" && blueRP != 0 ? "+" : ""}${blueRP}
         </td>
         </tr >
