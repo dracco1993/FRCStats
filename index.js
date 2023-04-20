@@ -439,15 +439,15 @@ function renderTableContents(title, division, renderEvent = false) {
 }
 
 function makeTeamColorCell(teamColor, teamKey) {
+  const color = teamColor ? textColor(teamColor) : "";
+
   return `
     <td ${
       teamColor
-        ? `style=\"background-color: ${teamColor}; color: ${textColor(
-            teamColor
-          )}"`
+        ? `style=\"background-color: ${teamColor}; color: ${color}"`
         : ""
     }>
-      ${teamNumberFromKey(teamKey, true)}
+      ${teamNumberFromKey(teamKey, true, color)}
     </td>
   `;
 }
@@ -480,9 +480,6 @@ function getTeamColor(teamKey, defaultColor) {
     const teamColors = JSON.parse(localStorage.getItem("teamColors"));
     return teamColors[teamKey] || defaultColor;
   }
-  // else {
-  //   return "#ffffff";
-  // }
 }
 
 function textColor(bgColor) {
@@ -518,12 +515,17 @@ function selectedTeamKey(teamNumber) {
   return `frc${teamNumber}`;
 }
 
-function teamNumberFromKey(teamKey, shouldLink = false) {
+function teamNumberFromKey(teamKey, shouldLink = false, color = "") {
   const teamNumber = teamKey.slice(3);
+
+  let linkStyle = "";
+  if (color != "") {
+    linkStyle = `style="color: ${color}"`;
+  }
 
   if (shouldLink) {
     return `
-      <a href="https://www.thebluealliance.com/team/${teamNumber}" target="_blank" style="color:white;">
+      <a href="https://www.thebluealliance.com/team/${teamNumber}" target="_blank" ${linkStyle}>
         ${teamNumber}
       </a>
     `;
