@@ -401,8 +401,6 @@ function renderTableContents(title, division, renderEvent = false) {
     let redTeamKeys = match.alliances.red.team_keys;
     let blueTeamKeys = match.alliances.blue.team_keys;
 
-    console.log(match.score_breakdown);
-
     let redScore = match.score_breakdown
       ? match.score_breakdown.red.totalPoints
       : "---";
