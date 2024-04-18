@@ -38,6 +38,11 @@ const DIVISIONS = [
   },
 ];
 
+const COLORS = {
+  red: "#ff0000",
+  blue: "#0000ff",
+};
+
 const defaultTeamColors = {
   // 2023
   frc135: "#d7c353",
@@ -328,6 +333,11 @@ function renderAllMatches() {
 }
 
 function renderTableContents(title, division, renderEvent = false) {
+  // Don't render anything if there are no matches for teams in the district
+  if (Object.keys(division).length == 0) {
+    return "";
+  }
+
   const eventName = eventNameFrom(title);
   const eventLink = `<a href="https://www.thebluealliance.com/event/${title}" target="_blank">${title}</a>`;
   var result = `
@@ -381,13 +391,13 @@ function renderTableContents(title, division, renderEvent = false) {
 
     var matchesText = "";
 
-    const r1Color = getTeamColor(redTeamKeys[0], "#ff0000");
-    const r2Color = getTeamColor(redTeamKeys[1], "#ff0000");
-    const r3Color = getTeamColor(redTeamKeys[2], "#ff0000");
+    const r1Color = getTeamColor(redTeamKeys[0], COLORS.red);
+    const r2Color = getTeamColor(redTeamKeys[1], COLORS.red);
+    const r3Color = getTeamColor(redTeamKeys[2], COLORS.red);
 
-    const b1Color = getTeamColor(blueTeamKeys[0], "#0000ff");
-    const b2Color = getTeamColor(blueTeamKeys[1], "#0000ff");
-    const b3Color = getTeamColor(blueTeamKeys[2], "#0000ff");
+    const b1Color = getTeamColor(blueTeamKeys[0], COLORS.blue);
+    const b2Color = getTeamColor(blueTeamKeys[1], COLORS.blue);
+    const b3Color = getTeamColor(blueTeamKeys[2], COLORS.blue);
 
     matchesText += `
         <tr>
