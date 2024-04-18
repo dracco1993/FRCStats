@@ -1,6 +1,8 @@
 // const YEAR = 2022;
 // const YEAR = 2019;
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 const DIVISIONS = [
   {
     name: "Archimedes",
@@ -77,14 +79,14 @@ $(document).ready(function () {
   var defaultDistrict = localStorage.getItem("selectedDistrict") || "fin";
   $("#selectedDistrict").val(defaultDistrict);
 
-  var defaultYear = localStorage.getItem("selectedYear") || "2023";
+  var defaultYear = localStorage.getItem("selectedYear") || CURRENT_YEAR;
   $("#selectedYear").val(defaultYear);
   selectedYear = defaultYear;
 
   init();
 });
 
-var selectedYear = 2023;
+var selectedYear = CURRENT_YEAR;
 
 var divisions = buildDefaultDivisions();
 
