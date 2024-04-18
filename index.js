@@ -1,6 +1,3 @@
-// const YEAR = 2022;
-// const YEAR = 2019;
-
 const CURRENT_YEAR = new Date().getFullYear();
 
 const DIVISIONS = [
@@ -102,6 +99,8 @@ var districtTeams = [];
 var frcColors = {};
 
 function init() {
+  setupDarkMode();
+
   // Load the default colors
   const teamColors = {
     ...defaultTeamColors,
@@ -147,6 +146,19 @@ function reset() {
   divisions = buildDefaultDivisions();
 
   getTeamsForDistrict(selectedDistrictKey);
+}
+
+function setupDarkMode() {
+  darkmode.cookieExpiry = 30;
+
+  // Set the dark mode checkbox initial state
+  let initialPreference =
+    darkmode.getSavedColorScheme() || darkmode.getPreferedColorScheme();
+  $("#darkModeCheckbox").prop("checked", initialPreference == "dark");
+
+  $("#darkModeCheckbox").change(function (e) {
+    darkmode.setDarkMode(e.target.checked);
+  });
 }
 
 function getRankingsFor(division) {
