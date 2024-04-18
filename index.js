@@ -99,6 +99,8 @@ var rankings = [];
 
 var districtTeams = [];
 
+var frcColors = {};
+
 function init() {
   // Load the default colors
   const teamColors = {
@@ -106,6 +108,8 @@ function init() {
     ...JSON.parse(localStorage.getItem("teamColors")),
   };
   localStorage.setItem("teamColors", JSON.stringify(teamColors));
+
+  loadFrcColors();
 
   // Do a forced load on the initial page load
   reset();
@@ -148,7 +152,7 @@ function reset() {
 function getRankingsFor(division) {
   var endpoint = `event/${division}/rankings`;
 
-  getJSONWithSpinner(urlWithAuth(endpoint), function (rankingStats) {
+  getJSONWithSpinner(tbaUrlWithAuth(endpoint), function (rankingStats) {
     // If this division doesn't have rankings
     // please don't break the rest of them...
     if (rankingStats && rankingStats.rankings) {
@@ -179,7 +183,7 @@ function getTeamsForDistrict(districtKey) {
     return;
   }
 
-  getJSONWithSpinner(urlWithAuth(endpoint), function (teams) {
+  getJSONWithSpinner(tbaUrlWithAuth(endpoint), function (teams) {
     districtTeams = teams.sort();
 
     // Cache the district teams, since those aren't changing
@@ -194,7 +198,7 @@ function getTeamsForDistrict(districtKey) {
 function getMatchesForDivision(division) {
   var endpoint = `event/${division}/matches`;
 
-  getJSONWithSpinner(urlWithAuth(endpoint), function (matches) {
+  getJSONWithSpinner(tbaUrlWithAuth(endpoint), function (matches) {
     var districtMatches = [];
 
     matches.forEach((match) => {
@@ -451,14 +455,31 @@ function renderTableContents(title, division, renderEvent = false) {
 }
 
 function makeTeamColorCell(teamColor, teamKey) {
+  let verifiedFrcColor = teamColor;
+  let verified = false;
+  let teamOutline;
+
+  // If the teamColor is an object, it's a verified FRC color
+  if (teamColor && typeof teamColor === "object") {
+    teamColor = verifiedFrcColor.primaryHex;
+    teamOutline = verifiedFrcColor.secondaryHex;
+    verified = true;
+  }
+
   const color = teamColor ? textColor(teamColor) : "";
 
+  let teamColorStyle = teamColor
+    ? `background-color: ${teamColor}; color: ${color};`
+    : "";
+
+  let teamOutlineStyle = verified
+    ? `outline: solid 3px ${teamOutline};outline-offset: -5px;`
+    : "";
+
+  let style = `style="${teamColorStyle}${teamOutlineStyle}"`;
+
   return `
-    <td ${
-      teamColor
-        ? `style=\"background-color: ${teamColor}; color: ${color}"`
-        : ""
-    }>
+    <td ${teamColor ? style : ""}>
       ${teamNumberFromKey(teamKey, true, color)}
     </td>
   `;
@@ -490,7 +511,15 @@ function onColorClear(e) {
 function getTeamColor(teamKey, defaultColor) {
   if (isDistrictTeam(teamKey)) {
     const teamColors = JSON.parse(localStorage.getItem("teamColors"));
-    return teamColors[teamKey] || defaultColor;
+
+    // Check for the verified FRC colors first
+    if (frcColors[teamKey] && frcColors[teamKey].verified) {
+      return frcColors[teamKey];
+    }
+
+    let unverifiedFrcColorsTeamColor =
+      frcColors[teamKey] && frcColors[teamKey].primaryHex;
+    return teamColors[teamKey] || unverifiedFrcColorsTeamColor || defaultColor;
   }
 }
 
@@ -505,6 +534,27 @@ function textColor(bgColor) {
 
   var yiq = (r * 299 + g * 587 + b * 114) / 1000;
   return yiq >= 128 ? "black" : "white";
+}
+
+function loadFrcColors() {
+  let endpoint = "https://api.frc-colors.com/v1/team?all";
+
+  frcColors = JSON.parse(localStorage.getItem("frcColors"));
+
+  // Don't make the request if we already have the colors
+  if (frcColors) {
+    return;
+  }
+
+  getJSONWithSpinner(endpoint, function (data) {
+    frcColors = {};
+
+    for (const [teamNumber, team] of Object.entries(data.teams)) {
+      frcColors[`frc${teamNumber}`] = team.colors;
+    }
+
+    localStorage.setItem("frcColors", JSON.stringify(frcColors));
+  });
 }
 
 function updateRankingsAndMatches() {
@@ -559,7 +609,7 @@ function eventNameFrom(eventKey) {
   return name ? name.name : eventKey;
 }
 
-function urlWithAuth(url) {
+function tbaUrlWithAuth(url) {
   var API_KEY =
     "ICh6EZ01IHFFi9oZuS4t6Q7sm1zcvZDf0BBCRkgpviQ0HYlcgYfupNUJhCAXqnIl";
   return `https://www.thebluealliance.com/api/v3/${url}?X-TBA-Auth-Key=${API_KEY}`;
