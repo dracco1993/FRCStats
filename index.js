@@ -239,13 +239,11 @@ function addMatches(matches) {
   matches.forEach((match) => {
     divisions[match.event_key][match.key] = match;
   });
-  // render();
 }
 
 function render() {
   // Render the ranking section
   let rankingText = renderRankings();
-  // $("#rankInfo").html(rankingText);
 
   // Add the color select change listener
   $(".colorSelect").change(onColorChange);
@@ -258,7 +256,6 @@ function render() {
   Object.keys(divisions).forEach((divisionKey) => {
     divisionListText += renderDivision(divisionKey);
   });
-  // $("#matchInfo").html(divisionListText);
 
   // Render the all matches section
   let allMatchText = renderAllMatches();
@@ -522,7 +519,6 @@ function onColorClear(e) {
   delete teamColors[teamKey];
   localStorage.setItem("teamColors", JSON.stringify(teamColors));
 
-  // TODO: figure out what to rerender here
   render();
 }
 
