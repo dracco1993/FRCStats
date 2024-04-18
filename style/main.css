@@ -7,6 +7,10 @@
   padding: 3px;
 } */
 
+[data-bs-color-scheme="light"] .lightModeText {
+  color: white;
+}
+
 .redDistrictTeam {
   color: white;
   background-color: red;
