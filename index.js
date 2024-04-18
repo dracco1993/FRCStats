@@ -65,6 +65,8 @@ const defaultTeamColors = {
   frc8742: "#241e20",
 };
 
+let currentScroll = 0;
+
 function buildDefaultDivisions() {
   var result = {};
 
@@ -262,7 +264,7 @@ function render() {
   let allMatchText = renderAllMatches();
   $("#allMatchInfo").html(allMatchText);
 
-  document.getElementById("content").scrollTo(0, 0);
+  // document.getElementById("content").scrollTo(0, 0);
 
   var scrollSpyContentEl = document.getElementById("content");
   var scrollSpy = bootstrap.ScrollSpy.getOrCreateInstance(scrollSpyContentEl);
@@ -639,9 +641,30 @@ function tbaUrlWithAuth(url) {
   return `https://www.thebluealliance.com/api/v3/${url}?X-TBA-Auth-Key=${API_KEY}`;
 }
 
+const reloadTime = 5;
+let countdown = reloadTime;
+let intervalId = null;
+function handleCountdown() {
+  countdown--;
+
+  if (countdown == 0) {
+    countdown = reloadTime;
+    handleReload();
+  }
+
+  $("#eta").text(countdown.toString().padStart(2, "0"));
+}
+
+function handleReload() {
+  clearInterval(intervalId);
+  reset();
+}
+
 var inFlightRequests = 0;
 function getJSONWithSpinner(url, callback) {
   $("#spinner").show();
+  $("#countdown").hide();
+
   inFlightRequests++;
 
   $.getJSON(url, callback).always(() => {
@@ -649,6 +672,9 @@ function getJSONWithSpinner(url, callback) {
 
     if (inFlightRequests == 0) {
       $("#spinner").hide();
+      $("#countdown").show();
+
+      intervalId = window.setInterval(handleCountdown, 1000);
     }
   });
 }

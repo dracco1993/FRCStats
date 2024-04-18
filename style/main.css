@@ -41,6 +41,21 @@
   padding-right: 15px;;
 } */
 
+#countdown {
+  position: fixed;
+  bottom: 15px;
+  right: 25px;
+}
+
+#eta {
+  float: right;
+}
+
+#countdown #icon {
+  float: left;
+  margin-right: 5px;
+}
+
 /* Dark mode selector */
 /* Used from https://codepen.io/Umer_Farooq/pen/eYJgKGN */
 .checkbox {
