@@ -67,7 +67,7 @@ const defaultTeamColors = {
 
 let currentScroll = 0;
 
-function buildDefaultDivisions() {
+function buildDivisions() {
   var result = {};
 
   DIVISIONS.map((division) => {
@@ -92,7 +92,7 @@ $(document).ready(function () {
 
 var selectedYear = CURRENT_YEAR;
 
-var divisions = buildDefaultDivisions();
+var divisions = buildDivisions();
 
 var rankings = [];
 
@@ -145,7 +145,7 @@ function reset() {
   selectedYear = $("#selectedYear").val();
   localStorage.setItem("selectedYear", selectedYear);
 
-  divisions = buildDefaultDivisions();
+  divisions = buildDivisions();
 
   getTeamsForDistrict(selectedDistrictKey);
 }
@@ -239,13 +239,13 @@ function addMatches(matches) {
   matches.forEach((match) => {
     divisions[match.event_key][match.key] = match;
   });
-  render();
+  // render();
 }
 
 function render() {
   // Render the ranking section
   let rankingText = renderRankings();
-  $("#rankInfo").html(rankingText);
+  // $("#rankInfo").html(rankingText);
 
   // Add the color select change listener
   $(".colorSelect").change(onColorChange);
@@ -258,10 +258,14 @@ function render() {
   Object.keys(divisions).forEach((divisionKey) => {
     divisionListText += renderDivision(divisionKey);
   });
-  $("#matchInfo").html(divisionListText);
+  // $("#matchInfo").html(divisionListText);
 
   // Render the all matches section
   let allMatchText = renderAllMatches();
+
+  // Actually change the html
+  $("#rankInfo").html(rankingText);
+  $("#matchInfo").html(divisionListText);
   $("#allMatchInfo").html(allMatchText);
 
   // document.getElementById("content").scrollTo(0, 0);
@@ -638,10 +642,10 @@ function eventNameFrom(eventKey) {
 function tbaUrlWithAuth(url) {
   var API_KEY =
     "ICh6EZ01IHFFi9oZuS4t6Q7sm1zcvZDf0BBCRkgpviQ0HYlcgYfupNUJhCAXqnIl";
-  return `https://www.thebluealliance.com/api/v3/${url}?X-TBA-Auth-Key=${API_KEY}`;
+  return `https://www.thebluealliance.com/api/v3/${url}?X-TBA-Auth-Key=${API_KEY}&cachebuster=${new Date().getTime()}`;
 }
 
-const reloadTime = 5;
+const reloadTime = 60;
 let countdown = reloadTime;
 let intervalId = null;
 function handleCountdown() {
@@ -675,6 +679,7 @@ function getJSONWithSpinner(url, callback) {
       $("#countdown").show();
 
       intervalId = window.setInterval(handleCountdown, 1000);
+      render();
     }
   });
 }
