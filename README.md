@@ -1,6 +1,6 @@
 # FRCStats
 
-[dracco1993.github.io/FRCStats/](dracco1993.github.io/FRCStats/)
+[dracco1993.github.io/FRCStats/](https://dracco1993.github.io/FRCStats/)
 
 A website that lists all the matches for a given FRC district at champs.
 
