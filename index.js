@@ -529,6 +529,18 @@ function getTeamColor(teamKey, defaultColor) {
       return frcColors[teamKey];
     }
 
+    // Check for white and white unverified colors
+    if (
+      frcColors[teamKey] &&
+      frcColors[teamKey].primaryHex == "#ffffff" &&
+      frcColors[teamKey].secondaryHex == "#ffffff"
+    ) {
+      return {
+        ...frcColors[teamKey],
+        secondaryHex: "#000000",
+      };
+    }
+
     let unverifiedFrcColorsTeamColor =
       frcColors[teamKey] && frcColors[teamKey].primaryHex;
     return teamColors[teamKey] || unverifiedFrcColorsTeamColor || defaultColor;
