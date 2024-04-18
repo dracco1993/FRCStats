@@ -102,8 +102,8 @@ var districtTeams = [];
 function init() {
   // Load the default colors
   const teamColors = {
-    ...JSON.parse(localStorage.getItem("teamColors")),
     ...defaultTeamColors,
+    ...JSON.parse(localStorage.getItem("teamColors")),
   };
   localStorage.setItem("teamColors", JSON.stringify(teamColors));
 
