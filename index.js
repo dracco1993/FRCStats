@@ -135,6 +135,8 @@ function init() {
 }
 
 function reset() {
+  clearInterval(intervalId);
+
   // Reset all of the "global" variables
   rankings = [];
   districtTeams = [];
@@ -649,15 +651,10 @@ function handleCountdown() {
 
   if (countdown == 0) {
     countdown = reloadTime;
-    handleReload();
+    reset();
   }
 
   $("#eta").text(countdown.toString().padStart(2, "0"));
-}
-
-function handleReload() {
-  clearInterval(intervalId);
-  reset();
 }
 
 var inFlightRequests = 0;
@@ -672,6 +669,9 @@ function getJSONWithSpinner(url, callback) {
 
     if (inFlightRequests == 0) {
       $("#spinner").hide();
+
+      countdown = reloadTime;
+      $("#eta").text(countdown.toString().padStart(2, "0"));
       $("#countdown").show();
 
       intervalId = window.setInterval(handleCountdown, 1000);
