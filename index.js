@@ -115,21 +115,8 @@ function init() {
   // Do a forced load on the initial page load
   reset();
 
-  // Add the district select change listener
-  $("#selectedDistrict").change(function (e) {
-    gtag("event", "district_dimension", {
-      district: $("#selectedDistrict").val(),
-    });
-
-    reset();
-  });
-
-  // Add the year select change listener
-  $("#selectedYear").change(function (e) {
-    gtag("event", "year_dimension", {
-      year: $("#selectedYear").val(),
-    });
-
+  // Add the district and year select change listener
+  $("#selectedDistrict, #selectedYear").change(function (e) {
     reset();
   });
 }
