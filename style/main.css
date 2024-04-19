@@ -24,14 +24,20 @@ td {
   color: white;
 }
 
-.redDistrictTeam {
-  color: white;
-  background-color: red;
+[data-bs-color-scheme="light"] .redScore {
+  background-color: #ffdddd;
 }
 
-.blueDistrictTeam {
-  color: white;
-  background-color: blue;
+[data-bs-color-scheme="light"] .blueScore {
+  background-color: #ddddff;
+}
+
+[data-bs-color-scheme="dark"] .redScore {
+  background-color: #b71f1f;
+}
+
+[data-bs-color-scheme="dark"] .blueScore {
+  background-color: #1f1fb7;
 }
 
 .matchWinner {

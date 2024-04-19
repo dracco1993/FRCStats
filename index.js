@@ -425,7 +425,7 @@ function renderTableContents(title, division, renderEvent = false) {
     let blueScoreRP = "";
     if (match.score_breakdown) {
       redScoreRP = `
-        <td class="${winner == "red" ? "matchWinner" : ""}">
+        <td class="redScore${winner == "red" ? " matchWinner" : ""}">
           ${redScore}
         </td>
 
@@ -434,7 +434,7 @@ function renderTableContents(title, division, renderEvent = false) {
         </td>
       `;
       blueScoreRP = `
-        <td class="${winner == "blue" ? "matchWinner" : ""}">
+        <td class="blueScore${winner == "blue" ? " matchWinner" : ""}">
           ${blueScore}
         </td>
 
