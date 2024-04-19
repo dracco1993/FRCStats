@@ -142,6 +142,10 @@ function reset() {
   gtag("event", "year_dimension", {
     year: $("#selectedYear").val(),
   });
+  gtag("event", "screen_view", {
+    app_name: "FRCStats",
+    screen_name: $("#selectedDistrict").val(),
+  });
 
   clearInterval(intervalId);
 
