@@ -1,11 +1,24 @@
-/* #rankInfo td,
-#matchInfo td,
-#allMatchInfo td {
-  text-align: center;
-  border: 1px solid black;
-  border-collapse: collapse;
-  padding: 3px;
-} */
+#rankInfo,
+#matchInfo,
+#allMatchInfo {
+  overflow: hidden;
+  width: 100%;
+}
+
+#content {
+  max-height: 90vh;
+  width: 100%;
+}
+
+th,
+td {
+  /* align text vertically */
+  vertical-align: middle;
+}
+
+.scoreRow {
+  border-top: 2px solid black !important;
+}
 
 [data-bs-color-scheme="light"] .lightModeText {
   color: white;
@@ -22,24 +35,14 @@
 }
 
 .matchWinner {
-  color: white;
-  background-color: green;
+  outline: 3px solid green;
+  outline-offset: -5px;
 }
 
 .navItem {
   float: right;
   margin-right: 15px;
 }
-
-#content {
-  max-height: 90vh;
-  overflow-y: scroll;
-}
-
-/* .section {
-  float: left;
-  padding-right: 15px;;
-} */
 
 #countdown {
   position: fixed;

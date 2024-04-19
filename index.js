@@ -362,29 +362,21 @@ function renderTableContents(title, division, renderEvent = false) {
   const eventName = eventNameFrom(title);
   const eventLink = `<a href="https://www.thebluealliance.com/event/${title}" target="_blank">${title}</a>`;
   var result = `
-      <div id="${eventName}">
+      <div id="${eventName}" class="division">
         <h2>${eventName} ${title != eventName ? `(${eventLink})` : ""}</h2>
         <table class="table table-responsive table-striped table-bordered">
           <thead class="thead-dark">
             <tr>
-              ${renderEvent ? "<td>Event</td>" : ""}
-              <th>Comp Level</th>
-              <th>Match Number</th>
-              <th>Time</th>
+              <th rowspan="2">Match</th>
 
-              <th>R1</th>
-              <th>R2</th>
-              <th>R3</th>
-
-              <th>B1</th>
-              <th>B2</th>
-              <th>B3</th>
-
+              <th colspan="3">Red Alliance</th>
               <th>Red Score</th>
-              <th>Blue Score</th>
-
               <th>Red RP</th>
+            </tr>
+              <th colspan="3">Blue Alliance</th>
+              <th>Blue Score</th>
               <th>Blue RP</th>
+            <tr>
             </tr>
           </thead>
         <tbody>
@@ -420,49 +412,61 @@ function renderTableContents(title, division, renderEvent = false) {
     const b2Color = getTeamColor(blueTeamKeys[1], COLORS.blue);
     const b3Color = getTeamColor(blueTeamKeys[2], COLORS.blue);
 
-    matchesText += `
-        <tr>
-          ${renderEvent ? `<td>${eventNameFrom(match.event_key)}</td>` : ""}
-          <td>${match.comp_level}</td>
-          <td>
-            <a href="https://www.thebluealliance.com/match/${matchKey}" target="_blank">
-              ${match.match_number}
-              ${match.comp_level != "qm" ? `-${match.set_number}` : ""}
-            </a>
-          </td>
-        <td>${time}</td>
+    const notQuals = match.comp_level != "qm";
 
-        ${makeTeamColorCell(r1Color, redTeamKeys[0])}
-        ${makeTeamColorCell(r2Color, redTeamKeys[1])}
-        ${makeTeamColorCell(r3Color, redTeamKeys[2])}
+    const matchNumber =
+      (notQuals ? match.comp_level : "") +
+      (notQuals ? `${match.set_number}-` : "") +
+      match.match_number;
 
-        ${makeTeamColorCell(b1Color, blueTeamKeys[0])}
-        ${makeTeamColorCell(b2Color, blueTeamKeys[1])}
-        ${makeTeamColorCell(b3Color, blueTeamKeys[2])}
-
-        <td ${
-          winner == "red"
-            ? 'style="background-color: green; color: white;"'
-            : ""
-        }>
+    let redScoreRP = "";
+    let blueScoreRP = "";
+    if (match.score_breakdown) {
+      redScoreRP = `
+        <td class="${winner == "red" ? "matchWinner" : ""}">
           ${redScore}
-        </td>
-        <td ${
-          winner == "blue"
-            ? 'style="background-color: green; color: white;"'
-            : ""
-        }>
-          ${blueScore}
         </td>
 
         <td>
           ${redRP != "---" && redRP != 0 ? "+" : ""}${redRP}
         </td>
+      `;
+      blueScoreRP = `
+        <td class="${winner == "blue" ? "matchWinner" : ""}">
+          ${blueScore}
+        </td>
+
         <td>
           ${blueRP != "---" && blueRP != 0 ? "+" : ""}${blueRP}
         </td>
-        </tr >
-        `;
+      `;
+    } else {
+      redScoreRP = `<td colspan="2" rowspan="2">${time}</td>`;
+    }
+
+    matchesText += `
+        <tr class="scoreRow">
+          <td rowspan="2"}>
+            ${renderEvent ? `${eventNameFrom(match.event_key)}<br/>` : ""}
+            <a href="https://www.thebluealliance.com/match/${matchKey}" target="_blank">
+              ${matchNumber}
+            </a>
+          </td>
+
+          ${makeTeamColorCell(r1Color, redTeamKeys[0])}
+          ${makeTeamColorCell(r2Color, redTeamKeys[1])}
+          ${makeTeamColorCell(r3Color, redTeamKeys[2])}
+
+          ${redScoreRP}
+        </tr>
+        <tr>
+          ${makeTeamColorCell(b1Color, blueTeamKeys[0])}
+          ${makeTeamColorCell(b2Color, blueTeamKeys[1])}
+          ${makeTeamColorCell(b3Color, blueTeamKeys[2])}
+
+          ${blueScoreRP}
+        </tr>
+      `;
 
     result += matchesText;
   });
@@ -490,7 +494,7 @@ function makeTeamColorCell(teamColor, teamKey) {
     : "";
 
   let teamOutlineStyle = verified
-    ? `outline: solid 3px ${teamOutline};outline-offset: -5px;`
+    ? `outline: 3px solid ${teamOutline};outline-offset: -5px;`
     : "";
 
   let style = `style="${teamColorStyle}${teamOutlineStyle}"`;
