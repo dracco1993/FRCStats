@@ -135,6 +135,14 @@ function init() {
 }
 
 function reset() {
+  // Send GA events, to better track the usage data
+  gtag("event", "district_dimension", {
+    district: $("#selectedDistrict").val(),
+  });
+  gtag("event", "year_dimension", {
+    year: $("#selectedYear").val(),
+  });
+
   clearInterval(intervalId);
 
   // Reset all of the "global" variables
