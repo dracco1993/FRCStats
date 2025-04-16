@@ -285,7 +285,6 @@ function renderRankings() {
           <th colspan="2">Team</th>
           <th>Rank</th>
           <th>Division</th>
-          <th>Color</td>
         </tr>
       </thead>
       <tbody>
@@ -316,14 +315,6 @@ function renderRankings() {
         </td>
         <td>${rank.rank}</td>
         <td>${eventNameFrom(rank.division)}</td>
-        <td>
-          <input id="${
-            rank.team_key
-          }" class="colorSelect" type="color" value="${teamColor}">
-          <button id="${
-            rank.team_key
-          }" type="button" class="btn-close colorClear" aria-label="Close"></button>
-        </td>
       </tr>
     `;
   });
