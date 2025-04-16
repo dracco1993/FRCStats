@@ -353,10 +353,12 @@ function renderTableContents(title, division, renderEvent = false) {
   }
 
   const eventName = eventNameFrom(title);
-  const eventLink = `<a href="https://www.thebluealliance.com/event/${title}" target="_blank">${title}</a>`;
+  const tbaEventLink = tbaIconWithLink(`https://www.thebluealliance.com/event/${title}`);
+  const sbEventLink = sbIconWithLink(`https://www.statbotics.io/event/${title}`);
+
   var result = `
       <div id="${eventName}" class="division">
-        <h2>${eventName} ${title != eventName ? `(${eventLink})` : ""}</h2>
+        <h2>${eventName} ${title != eventName ? `${tbaEventLink + sbEventLink}` : ""}</h2>
         <table class="table table-responsive table-striped table-bordered">
           <thead class="thead-dark">
             <tr>
@@ -602,18 +604,27 @@ function teamNumberFromKey(teamKey, shouldLink = false, color = "") {
 function tbaIconLinkFromTeamKey(teamKey) {
   const teamNumber = teamKey.slice(3);
 
-  return `
-    <a class="icon" href="https://www.thebluealliance.com/team/${teamNumber}/${selectedYear}" target="_blank">
-      <img src="./images/tba.webp" alt="TBA Icon" width="28" height="28">
-    </a>
-  `;
+  return tbaIconWithLink(`https://www.thebluealliance.com/team/${teamNumber}/${selectedYear}`);
 }
 
 function sbIconLinkFromTeamKey(teamKey) {
   const teamNumber = teamKey.slice(3);
 
+
+  return sbIconWithLink(`https://www.statbotics.io/team/${teamNumber}/${selectedYear}`);
+}
+
+function tbaIconWithLink(link) {
   return `
-    <a class="icon" href="https://www.statbotics.io/team/${teamNumber}/${selectedYear}" target="_blank">
+    <a class="icon" href="${link}" target="_blank">
+      <img src="./images/tba.webp" alt="TBA Icon" width="28" height="28">
+    </a>
+  `;
+}
+
+function sbIconWithLink(link) {
+  return `
+    <a class="icon" href="${link}" target="_blank">
       <img src="./images/sb.ico" alt="Statbotics Icon" width="28" height="28">
     </a>
   `;
