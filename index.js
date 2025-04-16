@@ -249,12 +249,6 @@ function render() {
   // Render the ranking section
   let rankingText = renderRankings();
 
-  // Add the color select change listener
-  $(".colorSelect").change(onColorChange);
-
-  // Add the color clear listener
-  $(".colorClear").click(onColorClear);
-
   // Render the division matches section
   let divisionListText = "";
   Object.keys(divisions).forEach((divisionKey) => {
@@ -503,28 +497,6 @@ function makeTeamColorCell(teamColor, teamKey) {
       ${teamNumberFromKey(teamKey, true, color)}
     </td>
   `;
-}
-
-function onColorChange(e) {
-  const teamKey = e.target.id;
-  const color = e.target.value;
-
-  let teamColors = JSON.parse(localStorage.getItem("teamColors"));
-  teamColors[teamKey] = color;
-  localStorage.setItem("teamColors", JSON.stringify(teamColors));
-
-  // TODO: figure out what to rerender here
-  render();
-}
-
-function onColorClear(e) {
-  const teamKey = e.target.id;
-
-  let teamColors = JSON.parse(localStorage.getItem("teamColors")) || {};
-  delete teamColors[teamKey];
-  localStorage.setItem("teamColors", JSON.stringify(teamColors));
-
-  render();
 }
 
 function getTeamColor(teamKey, defaultColor) {
