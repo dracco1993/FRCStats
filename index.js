@@ -249,12 +249,6 @@ function render() {
   // Render the ranking section
   let rankingText = renderRankings();
 
-  // Add the color select change listener
-  $(".colorSelect").change(onColorChange);
-
-  // Add the color clear listener
-  $(".colorClear").click(onColorClear);
-
   // Render the division matches section
   let divisionListText = "";
   Object.keys(divisions).forEach((divisionKey) => {
@@ -282,10 +276,9 @@ function renderRankings() {
     <table class="table table-responsive table-striped table-bordered">
       <thead class="thead-dark">
         <tr>
-          <th>Team</th>
+          <th colspan="2">Team</th>
           <th>Rank</th>
           <th>Division</th>
-          <th>Color</td>
         </tr>
       </thead>
       <tbody>
@@ -307,17 +300,15 @@ function renderRankings() {
     const teamColor = teamColors[rank.team_key] || "#ffffff";
     result += `
       <tr>
-        <td>${teamNumberFromKey(rank.team_key, true)}</td>
+        <td>
+          ${teamNumberFromKey(rank.team_key)}
+        </td>
+        <td>
+          ${tbaIconLinkFromTeamKey(rank.team_key)}
+          ${sbIconLinkFromTeamKey(rank.team_key)}
+        </td>
         <td>${rank.rank}</td>
         <td>${eventNameFrom(rank.division)}</td>
-        <td>
-          <input id="${
-            rank.team_key
-          }" class="colorSelect" type="color" value="${teamColor}">
-          <button id="${
-            rank.team_key
-          }" type="button" class="btn-close colorClear" aria-label="Close"></button>
-        </td>
       </tr>
     `;
   });
@@ -362,10 +353,12 @@ function renderTableContents(title, division, renderEvent = false) {
   }
 
   const eventName = eventNameFrom(title);
-  const eventLink = `<a href="https://www.thebluealliance.com/event/${title}" target="_blank">${title}</a>`;
+  const tbaEventLink = tbaIconWithLink(`https://www.thebluealliance.com/event/${title}`);
+  const sbEventLink = sbIconWithLink(`https://www.statbotics.io/event/${title}`);
+
   var result = `
       <div id="${eventName}" class="division">
-        <h2>${eventName} ${title != eventName ? `(${eventLink})` : ""}</h2>
+        <h2>${eventName} ${title != eventName ? `${tbaEventLink + sbEventLink}` : ""}</h2>
         <table class="table table-responsive table-striped table-bordered">
           <thead class="thead-dark">
             <tr>
@@ -508,28 +501,6 @@ function makeTeamColorCell(teamColor, teamKey) {
   `;
 }
 
-function onColorChange(e) {
-  const teamKey = e.target.id;
-  const color = e.target.value;
-
-  let teamColors = JSON.parse(localStorage.getItem("teamColors"));
-  teamColors[teamKey] = color;
-  localStorage.setItem("teamColors", JSON.stringify(teamColors));
-
-  // TODO: figure out what to rerender here
-  render();
-}
-
-function onColorClear(e) {
-  const teamKey = e.target.id;
-
-  let teamColors = JSON.parse(localStorage.getItem("teamColors")) || {};
-  delete teamColors[teamKey];
-  localStorage.setItem("teamColors", JSON.stringify(teamColors));
-
-  render();
-}
-
 function getTeamColor(teamKey, defaultColor) {
   if (isDistrictTeam(teamKey)) {
     const teamColors = JSON.parse(localStorage.getItem("teamColors"));
@@ -628,6 +599,35 @@ function teamNumberFromKey(teamKey, shouldLink = false, color = "") {
   }
 
   return teamNumber;
+}
+
+function tbaIconLinkFromTeamKey(teamKey) {
+  const teamNumber = teamKey.slice(3);
+
+  return tbaIconWithLink(`https://www.thebluealliance.com/team/${teamNumber}/${selectedYear}`);
+}
+
+function sbIconLinkFromTeamKey(teamKey) {
+  const teamNumber = teamKey.slice(3);
+
+
+  return sbIconWithLink(`https://www.statbotics.io/team/${teamNumber}/${selectedYear}`);
+}
+
+function tbaIconWithLink(link) {
+  return `
+    <a class="icon" href="${link}" target="_blank">
+      <img src="./images/tba.webp" alt="TBA Icon" width="28" height="28">
+    </a>
+  `;
+}
+
+function sbIconWithLink(link) {
+  return `
+    <a class="icon" href="${link}" target="_blank">
+      <img src="./images/sb.ico" alt="Statbotics Icon" width="28" height="28">
+    </a>
+  `;
 }
 
 function isDistrictTeam(teamNumber) {
