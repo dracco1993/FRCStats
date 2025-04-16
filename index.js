@@ -282,7 +282,7 @@ function renderRankings() {
     <table class="table table-responsive table-striped table-bordered">
       <thead class="thead-dark">
         <tr>
-          <th>Team</th>
+          <th colspan="2">Team</th>
           <th>Rank</th>
           <th>Division</th>
           <th>Color</td>
@@ -307,7 +307,13 @@ function renderRankings() {
     const teamColor = teamColors[rank.team_key] || "#ffffff";
     result += `
       <tr>
-        <td>${teamNumberFromKey(rank.team_key, true)}</td>
+        <td>
+          ${teamNumberFromKey(rank.team_key)}
+        </td>
+        <td>
+          ${tbaIconLinkFromTeamKey(rank.team_key)}
+          ${sbIconLinkFromTeamKey(rank.team_key)}
+        </td>
         <td>${rank.rank}</td>
         <td>${eventNameFrom(rank.division)}</td>
         <td>
@@ -628,6 +634,26 @@ function teamNumberFromKey(teamKey, shouldLink = false, color = "") {
   }
 
   return teamNumber;
+}
+
+function tbaIconLinkFromTeamKey(teamKey) {
+  const teamNumber = teamKey.slice(3);
+
+  return `
+    <a class="icon" href="https://www.thebluealliance.com/team/${teamNumber}/${selectedYear}" target="_blank">
+      <img src="./images/tba.webp" alt="TBA Icon" width="28" height="28">
+    </a>
+  `;
+}
+
+function sbIconLinkFromTeamKey(teamKey) {
+  const teamNumber = teamKey.slice(3);
+
+  return `
+    <a class="icon" href="https://www.statbotics.io/team/${teamNumber}/${selectedYear}" target="_blank">
+      <img src="./images/sb.ico" alt="Statbotics Icon" width="28" height="28">
+    </a>
+  `;
 }
 
 function isDistrictTeam(teamNumber) {

@@ -60,6 +60,10 @@ td {
   float: right;
 }
 
+.icon {
+  text-decoration: none;
+}
+
 #countdown #icon {
   float: left;
   margin-right: 5px;
