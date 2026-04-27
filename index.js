@@ -1,163 +1,88 @@
-const CURRENT_YEAR = new Date().getFullYear();
+const CURRENT_SEASON = "2526";
+const TOA_API_KEY = "63mLdRGqejGHYWZX0kldnkWa2MEwq6YgXh9/om24OYM=";
+const TOA_BASE_URL = "https://theorangealliance.org/api";
 
-const DIVISIONS = [
-  {
-    name: "Archimedes",
-    key: "arc",
-  },
-  {
-    name: "Curie",
-    key: "cur",
-  },
-  {
-    name: "Daly",
-    key: "dal",
-  },
-  {
-    name: "Galileo",
-    key: "gal",
-  },
-  {
-    name: "Hopper",
-    key: "hop",
-  },
-  {
-    name: "Johnson",
-    key: "joh",
-  },
-  {
-    name: "Milstein",
-    key: "mil",
-  },
-  {
-    name: "Newton",
-    key: "new",
-  },
-];
-
-const COLORS = {
-  red: "#ff0000",
-  blue: "#0000ff",
-};
-
-const defaultTeamColors = {
-  // 2023
-  frc135: "#d7c353",
-  frc461: "#c69b08",
-  frc1501: "#9ebbd6",
-  frc3940: "#662c91",
-  frc4272: "#801819",
-  frc5010: "#FF5010",
-  frc6721: "#e73685",
-  // frc7457: "#c78c35",
-  frc7617: "#ce9c1a",
-  frc7657: "#cd5828",
-  frc9071: "#ff6700",
-
-  // 2022
-  frc829: "#F6D284",
-  frc1555: "#51BBF6",
-  frc1741: "#dd3333",
-  frc4926: "#50D017",
-  frc5484: "#e67958",
-  frc7457: "#c78c35",
-  frc7617: "#0548a9",
-  frc8742: "#241e20",
-};
+// Populated dynamically from the TOA API each page load
+let DIVISIONS = [];
 
 let currentScroll = 0;
 
 function buildDivisions() {
   var result = {};
-
-  DIVISIONS.map((division) => {
-    const key = `${selectedYear}${division.key}`;
-    result[key] = {};
+  DIVISIONS.forEach((division) => {
+    result[division.event_key] = {};
   });
-
   return result;
 }
 
 $(document).ready(function () {
-  // Set the default value from the cache, or just Indiana <3
-  var defaultDistrict = localStorage.getItem("selectedDistrict") || "fin";
-  $("#selectedDistrict").val(defaultDistrict);
+  var defaultRegion = localStorage.getItem("selectedRegion") || "IN";
+  $("#selectedRegion").val(defaultRegion);
 
-  var defaultYear = localStorage.getItem("selectedYear") || CURRENT_YEAR;
-  $("#selectedYear").val(defaultYear);
-  selectedYear = defaultYear;
+  var defaultSeason = localStorage.getItem("selectedSeason") || CURRENT_SEASON;
+  $("#selectedSeason").val(defaultSeason);
+  selectedSeason = defaultSeason;
 
   init();
 });
 
-var selectedYear = CURRENT_YEAR;
+var selectedSeason = CURRENT_SEASON;
 
-var divisions = buildDivisions();
+var divisions = {};
 
 var rankings = [];
 
-var districtTeams = [];
-
-var frcColors = {};
+var regionTeams = [];
 
 function init() {
   setupDarkMode();
 
-  // Load the default colors
-  const teamColors = {
-    ...defaultTeamColors,
-    ...JSON.parse(localStorage.getItem("teamColors")),
-  };
-  localStorage.setItem("teamColors", JSON.stringify(teamColors));
-
-  loadFrcColors();
-
-  // Do a forced load on the initial page load
   reset();
 
-  // Add the district and year select change listener
-  $("#selectedDistrict, #selectedYear").change(function (e) {
+  $("#selectedRegion, #selectedSeason").change(function (e) {
     reset();
   });
 }
 
 function reset() {
-  // Send GA events, to better track the usage data
-  gtag("event", "district_dimension", {
-    district: $("#selectedDistrict").val(),
+  gtag("event", "region_dimension", {
+    region: $("#selectedRegion").val(),
   });
-  gtag("event", "year_dimension", {
-    year: $("#selectedYear").val(),
+  gtag("event", "season_dimension", {
+    season: $("#selectedSeason").val(),
   });
   gtag("event", "theme_dimension", {
     theme: darkmode.inDarkMode == true ? "dark" : "light",
   });
   gtag("event", "screen_view", {
-    app_name: "FRCStats",
-    screen_name: $("#selectedDistrict").val(),
+    app_name: "FTCStats",
+    screen_name: $("#selectedRegion").val(),
   });
 
   clearInterval(intervalId);
 
-  // Reset all of the "global" variables
   rankings = [];
-  districtTeams = [];
+  regionTeams = [];
+  DIVISIONS = [];
+  divisions = {};
 
-  var selectedDistrictKey = $("#selectedDistrict").val();
-  localStorage.setItem("selectedDistrict", selectedDistrictKey);
+  var selectedRegionKey = $("#selectedRegion").val();
+  localStorage.setItem("selectedRegion", selectedRegionKey);
 
-  selectedYear = $("#selectedYear").val();
-  localStorage.setItem("selectedYear", selectedYear);
+  selectedSeason = $("#selectedSeason").val();
+  localStorage.setItem("selectedSeason", selectedSeason);
 
-  divisions = buildDivisions();
+  $("#matchInfo").html("");
+  $("#rankInfo").html("");
+  $("#allMatchInfo").html("");
+  updateDivisionsNav();
 
-  getTeamsForDistrict(selectedDistrictKey);
+  loadDivisionsAndTeams(selectedRegionKey);
 }
 
 function setupDarkMode() {
   darkmode.cookieExpiry = 30;
 
-  // Set the dark mode checkbox initial state
   let initialPreference =
     darkmode.getSavedColorScheme() || darkmode.getPreferedColorScheme();
   $("#darkModeCheckbox").prop("checked", initialPreference == "dark");
@@ -167,20 +92,75 @@ function setupDarkMode() {
   });
 }
 
-function getRankingsFor(division) {
-  var endpoint = `event/${division}/rankings`;
+function loadDivisionsAndTeams(regionKey) {
+  var endpoint = `${TOA_BASE_URL}/event?season_key=${selectedSeason}&region_key=CMP`;
 
-  getJSONWithSpinner(tbaUrlWithAuth(endpoint), function (rankingStats) {
-    // If this division doesn't have rankings
-    // please don't break the rest of them...
-    if (rankingStats && rankingStats.rankings) {
-      rankingStats.rankings.forEach((rank) => {
-        let teamNumber = rank.team_key;
+  getJSONWithSpinner(endpoint, function (events) {
+    if (!events || events.length === 0) {
+      updateDivisionsNav();
+      return;
+    }
 
-        if (isDistrictTeam(teamNumber)) {
+    // Division events have division_key > 0; division_key 0 is the Finals/parent event
+    const divisionEvents = events.filter((e) => e.division_key > 0);
+
+    DIVISIONS = divisionEvents
+      .map((e) => ({
+        name: e.division_name || e.event_name,
+        event_key: e.event_key,
+        division_key: e.division_key,
+      }))
+      .sort((a, b) => a.division_key - b.division_key);
+
+    divisions = buildDivisions();
+    updateDivisionsNav();
+
+    if (DIVISIONS.length > 0) {
+      getTeamsForRegion(regionKey);
+    }
+  });
+}
+
+function updateDivisionsNav() {
+  var navHtml = "";
+  DIVISIONS.forEach((division) => {
+    navHtml += `<li><a class="dropdown-item" href="#${division.name}">${division.name}</a></li>`;
+  });
+  $("#divisionsDropdown").html(navHtml);
+}
+
+function getTeamsForRegion(regionKey) {
+  var endpoint = `${TOA_BASE_URL}/team?region_key=${regionKey}&season_key=${selectedSeason}`;
+  const cacheKey = `${selectedSeason}-${regionKey}`;
+
+  let cachedTeams = JSON.parse(localStorage.getItem("regionTeams")) || {};
+  if (cachedTeams[cacheKey]) {
+    regionTeams = cachedTeams[cacheKey];
+    updateRankingsAndMatches();
+    return;
+  }
+
+  getJSONWithSpinner(endpoint, function (teams) {
+    regionTeams = (teams || []).map((t) => t.team_key);
+
+    let cache = JSON.parse(localStorage.getItem("regionTeams")) || {};
+    cache[cacheKey] = regionTeams;
+    localStorage.setItem("regionTeams", JSON.stringify(cache));
+
+    updateRankingsAndMatches();
+  });
+}
+
+function getRankingsFor(divisionKey) {
+  var endpoint = `${TOA_BASE_URL}/event/${divisionKey}/rankings`;
+
+  getJSONWithSpinner(endpoint, function (rankingStats) {
+    if (rankingStats && rankingStats.length > 0) {
+      rankingStats.forEach((rank) => {
+        if (isRegionTeam(rank.team_key)) {
           rankings.push({
             ...rank,
-            division: division,
+            division: divisionKey,
           });
         }
       });
@@ -188,82 +168,47 @@ function getRankingsFor(division) {
   });
 }
 
-function getTeamsForDistrict(districtKey) {
-  const fullKey = `${selectedYear}${districtKey}`;
-  var endpoint = `district/${fullKey}/teams/keys`;
+function getMatchesForDivision(divisionKey) {
+  var endpoint = `${TOA_BASE_URL}/event/${divisionKey}/matches`;
 
-  // Check to see if we've already cached this district's teams
-  let cachedTeams = JSON.parse(localStorage.getItem("districtTeams")) || {};
-  if (cachedTeams[fullKey]) {
-    districtTeams = cachedTeams[fullKey];
+  getJSONWithSpinner(endpoint, function (matches) {
+    var regionMatches = [];
 
-    updateRankingsAndMatches();
-    return;
-  }
+    (matches || []).forEach((match) => {
+      const isRegionMatch =
+        match.participants &&
+        match.participants.some((p) => isRegionTeam(p.team_key));
 
-  getJSONWithSpinner(tbaUrlWithAuth(endpoint), function (teams) {
-    districtTeams = teams.sort();
-
-    // Cache the district teams, since those aren't changing
-    let cachedTeams = JSON.parse(localStorage.getItem("districtTeams")) || {};
-    cachedTeams[fullKey] = districtTeams;
-    localStorage.setItem("districtTeams", JSON.stringify(cachedTeams));
-
-    updateRankingsAndMatches();
-  });
-}
-
-function getMatchesForDivision(division) {
-  var endpoint = `event/${division}/matches`;
-
-  getJSONWithSpinner(tbaUrlWithAuth(endpoint), function (matches) {
-    var districtMatches = [];
-
-    matches.forEach((match) => {
-      // Check to see if any of the match teams are in the district
-      // This is ugly, but it's not _terrible_
-      let isDistrictMatch =
-        isDistrictTeam(match.alliances.red.team_keys[0]) ||
-        isDistrictTeam(match.alliances.red.team_keys[1]) ||
-        isDistrictTeam(match.alliances.red.team_keys[2]) ||
-        isDistrictTeam(match.alliances.blue.team_keys[0]) ||
-        isDistrictTeam(match.alliances.blue.team_keys[1]) ||
-        isDistrictTeam(match.alliances.blue.team_keys[2]);
-
-      if (isDistrictMatch) {
-        districtMatches.push(match);
+      if (isRegionMatch) {
+        regionMatches.push(match);
       }
     });
 
-    addMatches(districtMatches);
+    addMatches(regionMatches, divisionKey);
   });
 }
 
-function addMatches(matches) {
+function addMatches(matches, divisionKey) {
   matches.forEach((match) => {
-    divisions[match.event_key][match.key] = match;
+    if (divisions[divisionKey]) {
+      divisions[divisionKey][match.match_key] = match;
+    }
   });
 }
 
 function render() {
-  // Render the ranking section
   let rankingText = renderRankings();
 
-  // Render the division matches section
   let divisionListText = "";
   Object.keys(divisions).forEach((divisionKey) => {
     divisionListText += renderDivision(divisionKey);
   });
 
-  // Render the all matches section
   let allMatchText = renderAllMatches();
 
-  // Actually change the html
   $("#rankInfo").html(rankingText);
   $("#matchInfo").html(divisionListText);
   $("#allMatchInfo").html(allMatchText);
-
-  // document.getElementById("content").scrollTo(0, 0);
 
   var scrollSpyContentEl = document.getElementById("content");
   var scrollSpy = bootstrap.ScrollSpy.getOrCreateInstance(scrollSpyContentEl);
@@ -271,63 +216,60 @@ function render() {
 }
 
 function renderRankings() {
+  if (rankings.length === 0) return "";
+
   let result = `
     <h3>Rankings</h3>
     <table class="table table-responsive table-striped table-bordered">
       <thead class="thead-dark">
         <tr>
-          <th colspan="2">Team</th>
+          <th>Team</th>
+          <th>Name</th>
           <th>Rank</th>
+          <th>RP</th>
           <th>Division</th>
         </tr>
       </thead>
       <tbody>
   `;
 
-  // Sort by rank first, then team number
   rankings = rankings.sort(function (a, b) {
     if (a.rank != b.rank) {
       return a.rank - b.rank;
     } else {
-      return teamNumberFromKey(a.team_key) - teamNumberFromKey(b.team_key);
+      return parseInt(a.team_key) - parseInt(b.team_key);
     }
   });
 
-  const teamColors = JSON.parse(localStorage.getItem("teamColors"));
-
-  // Render the individual rows
   rankings.forEach((rank) => {
-    const teamColor = teamColors[rank.team_key] || "#ffffff";
+    const teamName = rank.team ? rank.team.team_name_short : "";
+    const rp =
+      rank.ranking_points !== undefined && rank.ranking_points !== null
+        ? rank.ranking_points
+        : "---";
+
     result += `
       <tr>
         <td>
-          ${teamNumberFromKey(rank.team_key)}
+          ${toaIconLinkFromTeamKey(rank.team_key)}
+          ${rank.team_key}
         </td>
-        <td>
-          ${tbaIconLinkFromTeamKey(rank.team_key)}
-          ${sbIconLinkFromTeamKey(rank.team_key)}
-        </td>
+        <td>${teamName}</td>
         <td>${rank.rank}</td>
-        <td>${eventNameFrom(rank.division)}</td>
+        <td>${rp}</td>
+        <td>${divisionNameFrom(rank.division)}</td>
       </tr>
     `;
   });
 
   result += "</tbody></table><br>";
-
   return result;
 }
 
 function renderDivision(divisionKey) {
-  // Get the matches
   let division = divisions[divisionKey];
-
-  // Sort them
   division = sortMatches(division);
-
-  // Save them
   divisions[divisionKey] = division;
-
   return renderTableContents(divisionKey, division);
 }
 
@@ -340,318 +282,168 @@ function renderAllMatches() {
     };
   });
 
-  // Sort them after we have them all added
   allMatches = sortMatches(allMatches);
-
   return renderTableContents("All Matches", allMatches, true);
 }
 
 function renderTableContents(title, division, renderEvent = false) {
-  // Don't render anything if there are no matches for teams in the district
   if (Object.keys(division).length == 0) {
     return "";
   }
 
-  const eventName = eventNameFrom(title);
-  const tbaEventLink = tbaIconWithLink(`https://www.thebluealliance.com/event/${title}`);
-  const sbEventLink = sbIconWithLink(`https://www.statbotics.io/event/${title}`);
+  const eventName = divisionNameFrom(title);
+  const toaLink =
+    title !== eventName
+      ? toaIconWithLink(`https://theorangealliance.org/events/${title}`)
+      : "";
 
   var result = `
-      <div id="${eventName}" class="division">
-        <h2>${eventName} ${title != eventName ? `${tbaEventLink + sbEventLink}` : ""}</h2>
-        <table class="table table-responsive table-striped table-bordered">
-          <thead class="thead-dark">
-            <tr>
-              <th rowspan="2">Match</th>
-
-              <th colspan="3">Red Alliance</th>
-              <th>Red Score</th>
-              <th>Red RP</th>
-            </tr>
-              <th colspan="3">Blue Alliance</th>
-              <th>Blue Score</th>
-              <th>Blue RP</th>
-            <tr>
-            </tr>
-          </thead>
+    <div id="${eventName}" class="division">
+      <h2>${eventName} ${toaLink}</h2>
+      <table class="table table-responsive table-striped table-bordered">
+        <thead class="thead-dark">
+          <tr>
+            <th rowspan="2">Match</th>
+            <th colspan="2">Red Alliance</th>
+            <th>Red Score</th>
+          </tr>
+          <tr>
+            <th colspan="2">Blue Alliance</th>
+            <th>Blue Score</th>
+          </tr>
+        </thead>
         <tbody>
-    `;
+  `;
 
   Object.keys(division).forEach((matchKey) => {
     const match = division[matchKey];
 
-    const d = new Date(match.time * 1000);
-    const time = d.toLocaleTimeString();
+    const scheduledTime = match.scheduled_time
+      ? new Date(match.scheduled_time)
+      : null;
+    const time = scheduledTime ? scheduledTime.toLocaleTimeString() : "TBD";
 
-    let redTeamKeys = match.alliances.red.team_keys;
-    let blueTeamKeys = match.alliances.blue.team_keys;
+    const participants = match.participants || [];
+    const r1Key = (participants.find((p) => p.station === 11) || {}).team_key || "";
+    const r2Key = (participants.find((p) => p.station === 12) || {}).team_key || "";
+    const b1Key = (participants.find((p) => p.station === 21) || {}).team_key || "";
+    const b2Key = (participants.find((p) => p.station === 22) || {}).team_key || "";
 
-    let redScore = match.score_breakdown
-      ? match.score_breakdown.red.totalPoints
-      : "---";
-    let blueScore = match.score_breakdown
-      ? match.score_breakdown.blue.totalPoints
-      : "---";
+    const hasScore = match.post_result_time != null;
+    const redScore = hasScore ? match.red_score : "---";
+    const blueScore = hasScore ? match.blue_score : "---";
 
-    let redRP = match.score_breakdown ? match.score_breakdown.red.rp : "---";
-    let blueRP = match.score_breakdown ? match.score_breakdown.blue.rp : "---";
-    let winner = match.winning_alliance;
+    const winner = hasScore
+      ? match.red_score > match.blue_score
+        ? "red"
+        : match.blue_score > match.red_score
+        ? "blue"
+        : "tie"
+      : "";
 
-    var matchesText = "";
+    const matchNumber = match.match_name || matchKey;
 
-    const r1Color = getTeamColor(redTeamKeys[0], COLORS.red);
-    const r2Color = getTeamColor(redTeamKeys[1], COLORS.red);
-    const r3Color = getTeamColor(redTeamKeys[2], COLORS.red);
+    let redScoreCell = "";
+    let blueScoreCell = "";
 
-    const b1Color = getTeamColor(blueTeamKeys[0], COLORS.blue);
-    const b2Color = getTeamColor(blueTeamKeys[1], COLORS.blue);
-    const b3Color = getTeamColor(blueTeamKeys[2], COLORS.blue);
-
-    const notQuals = match.comp_level != "qm";
-
-    const matchNumber =
-      (notQuals ? match.comp_level : "") +
-      (notQuals ? `${match.set_number}-` : "") +
-      match.match_number;
-
-    let redScoreRP = "";
-    let blueScoreRP = "";
-    if (match.score_breakdown) {
-      redScoreRP = `
-        <td class="redScore${winner == "red" ? " matchWinner" : ""}">
+    if (hasScore) {
+      redScoreCell = `
+        <td class="redScore${winner === "red" ? " matchWinner" : ""}">
           ${redScore}
         </td>
-
-        <td>
-          ${redRP != "---" && redRP != 0 ? "+" : ""}${redRP}
-        </td>
       `;
-      blueScoreRP = `
-        <td class="blueScore${winner == "blue" ? " matchWinner" : ""}">
+      blueScoreCell = `
+        <td class="blueScore${winner === "blue" ? " matchWinner" : ""}">
           ${blueScore}
-        </td>
-
-        <td>
-          ${blueRP != "---" && blueRP != 0 ? "+" : ""}${blueRP}
         </td>
       `;
     } else {
-      redScoreRP = `<td colspan="2" rowspan="2">${time}</td>`;
+      redScoreCell = `<td colspan="1" rowspan="2">${time}</td>`;
     }
 
-    matchesText += `
-        <tr class="scoreRow">
-          <td rowspan="2"}>
-            ${renderEvent ? `${eventNameFrom(match.event_key)}<br/>` : ""}
-            <a href="https://www.thebluealliance.com/match/${matchKey}" target="_blank">
-              ${matchNumber}
-            </a>
-          </td>
-
-          ${makeTeamColorCell(r1Color, redTeamKeys[0])}
-          ${makeTeamColorCell(r2Color, redTeamKeys[1])}
-          ${makeTeamColorCell(r3Color, redTeamKeys[2])}
-
-          ${redScoreRP}
-        </tr>
-        <tr>
-          ${makeTeamColorCell(b1Color, blueTeamKeys[0])}
-          ${makeTeamColorCell(b2Color, blueTeamKeys[1])}
-          ${makeTeamColorCell(b3Color, blueTeamKeys[2])}
-
-          ${blueScoreRP}
-        </tr>
-      `;
-
-    result += matchesText;
+    result += `
+      <tr class="scoreRow">
+        <td rowspan="2">
+          ${renderEvent ? `${divisionNameFrom(match.event_key)}<br/>` : ""}
+          <a href="https://theorangealliance.org/events/${match.event_key}" target="_blank">
+            ${matchNumber}
+          </a>
+        </td>
+        ${makeTeamCell(r1Key)}
+        ${makeTeamCell(r2Key)}
+        ${redScoreCell}
+      </tr>
+      <tr>
+        ${makeTeamCell(b1Key)}
+        ${makeTeamCell(b2Key)}
+        ${blueScoreCell}
+      </tr>
+    `;
   });
 
   result += "</tbody></table></div><br><br>";
   return result;
 }
 
-function makeTeamColorCell(teamColor, teamKey) {
-  let verifiedFrcColor = teamColor;
-  let verified = false;
-  let teamOutline;
-
-  // If the teamColor is an object, it's a verified FRC color
-  if (teamColor && typeof teamColor === "object") {
-    teamColor = verifiedFrcColor.primaryHex;
-    teamOutline = verifiedFrcColor.secondaryHex;
-    verified = true;
-  }
-
-  const color = teamColor ? textColor(teamColor) : "";
-
-  let teamColorStyle = teamColor
-    ? `background-color: ${teamColor}; color: ${color};`
-    : "";
-
-  let teamOutlineStyle = verified
-    ? `outline: 3px solid ${teamOutline};outline-offset: -5px;`
-    : "";
-
-  let style = `style="${teamColorStyle}${teamOutlineStyle}"`;
+function makeTeamCell(teamKey) {
+  const highlight = isRegionTeam(teamKey);
+  const style = highlight ? ' style="font-weight: bold;"' : "";
 
   return `
-    <td ${teamColor ? style : ""}>
-      ${teamNumberFromKey(teamKey, true, color)}
+    <td${style}>
+      <a href="https://theorangealliance.org/teams/${teamKey}" target="_blank">
+        ${teamKey}
+      </a>
     </td>
   `;
 }
 
-function getTeamColor(teamKey, defaultColor) {
-  if (isDistrictTeam(teamKey)) {
-    const teamColors = JSON.parse(localStorage.getItem("teamColors"));
-
-    // Check for the verified FRC colors first
-    if (frcColors[teamKey] && frcColors[teamKey].verified) {
-      return frcColors[teamKey];
-    }
-
-    // Check for white and white unverified colors
-    if (
-      frcColors[teamKey] &&
-      frcColors[teamKey].primaryHex == "#ffffff" &&
-      frcColors[teamKey].secondaryHex == "#ffffff"
-    ) {
-      return {
-        ...frcColors[teamKey],
-        secondaryHex: "#000000",
-      };
-    }
-
-    let unverifiedFrcColorsTeamColor =
-      frcColors[teamKey] && frcColors[teamKey].primaryHex;
-    return teamColors[teamKey] || unverifiedFrcColorsTeamColor || defaultColor;
-  }
-}
-
-function textColor(bgColor) {
-  bgColor = bgColor.replace("#", "");
-
-  var aRgbHex = bgColor.match(/.{1,2}/g);
-
-  var r = parseInt(aRgbHex[0], 16);
-  var g = parseInt(aRgbHex[1], 16);
-  var b = parseInt(aRgbHex[2], 16);
-
-  var yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq >= 128 ? "black" : "white";
-}
-
-function loadFrcColors() {
-  let endpoint = "https://api.frc-colors.com/v1/team?all";
-
-  frcColors = JSON.parse(localStorage.getItem("frcColors"));
-
-  // Don't make the request if we already have the colors
-  if (frcColors) {
-    return;
-  }
-
-  getJSONWithSpinner(endpoint, function (data) {
-    frcColors = {};
-
-    for (const [teamNumber, team] of Object.entries(data.teams)) {
-      frcColors[`frc${teamNumber}`] = team.colors;
-    }
-
-    localStorage.setItem("frcColors", JSON.stringify(frcColors));
-  });
+function isRegionTeam(teamKey) {
+  return regionTeams.includes(teamKey);
 }
 
 function updateRankingsAndMatches() {
-  // Get the rankings and matches for each division
-  Object.keys(divisions).forEach((division) => {
-    getRankingsFor(division);
-    getMatchesForDivision(division);
+  Object.keys(divisions).forEach((divisionKey) => {
+    getRankingsFor(divisionKey);
+    getMatchesForDivision(divisionKey);
   });
 }
 
 function sortMatches(division) {
   return Object.fromEntries(
     Object.entries(division).sort(function (a, b) {
-      return a[1].time - b[1].time;
+      const aTime = a[1].scheduled_time
+        ? new Date(a[1].scheduled_time).getTime()
+        : 0;
+      const bTime = b[1].scheduled_time
+        ? new Date(b[1].scheduled_time).getTime()
+        : 0;
+      return aTime - bTime;
     })
   );
 }
 
-function selectedTeamKey(teamNumber) {
-  return `frc${teamNumber}`;
+function divisionNameFrom(eventKey) {
+  const division = DIVISIONS.find((d) => d.event_key === eventKey);
+  return division ? division.name : eventKey;
 }
 
-function teamNumberFromKey(teamKey, shouldLink = false, color = "") {
-  const teamNumber = teamKey.slice(3);
-
-  let linkStyle = "";
-  if (color != "") {
-    linkStyle = `style="color: ${color}"`;
-  }
-
-  if (shouldLink) {
-    return `
-      <a href="https://www.thebluealliance.com/team/${teamNumber}" target="_blank" ${linkStyle}>
-        ${teamNumber}
-      </a>
-    `;
-  }
-
-  return teamNumber;
+function toaIconLinkFromTeamKey(teamKey) {
+  return toaIconWithLink(`https://theorangealliance.org/teams/${teamKey}`);
 }
 
-function tbaIconLinkFromTeamKey(teamKey) {
-  const teamNumber = teamKey.slice(3);
-
-  return tbaIconWithLink(`https://www.thebluealliance.com/team/${teamNumber}/${selectedYear}`);
-}
-
-function sbIconLinkFromTeamKey(teamKey) {
-  const teamNumber = teamKey.slice(3);
-
-
-  return sbIconWithLink(`https://www.statbotics.io/team/${teamNumber}/${selectedYear}`);
-}
-
-function tbaIconWithLink(link) {
+function toaIconWithLink(link) {
   return `
     <a class="icon" href="${link}" target="_blank">
-      <img src="./images/tba.webp" alt="TBA Icon" width="28" height="28">
+      <img src="https://theorangealliance.org/favicon.ico" alt="TOA Icon" width="28" height="28">
     </a>
   `;
-}
-
-function sbIconWithLink(link) {
-  return `
-    <a class="icon" href="${link}" target="_blank">
-      <img src="./images/sb.ico" alt="Statbotics Icon" width="28" height="28">
-    </a>
-  `;
-}
-
-function isDistrictTeam(teamNumber) {
-  return districtTeams.includes(teamNumber);
-}
-
-function eventNameFrom(eventKey) {
-  const divisionKey = eventKey.replace(/[0-9]/g, "");
-  const name = DIVISIONS.find((d) => d.key == divisionKey);
-
-  // Return the mapped string if possible
-  // otherwise return the event key
-  return name ? name.name : eventKey;
-}
-
-function tbaUrlWithAuth(url) {
-  var API_KEY =
-    "ICh6EZ01IHFFi9oZuS4t6Q7sm1zcvZDf0BBCRkgpviQ0HYlcgYfupNUJhCAXqnIl";
-  return `https://www.thebluealliance.com/api/v3/${url}?X-TBA-Auth-Key=${API_KEY}&cachebuster=${new Date().getTime()}`;
 }
 
 const reloadTime = 60;
 let countdown = reloadTime;
 let intervalId = null;
+
 function handleCountdown() {
   countdown--;
 
@@ -664,13 +456,23 @@ function handleCountdown() {
 }
 
 var inFlightRequests = 0;
+
 function getJSONWithSpinner(url, callback) {
   $("#spinner").show();
   $("#countdown").hide();
 
   inFlightRequests++;
 
-  $.getJSON(url, callback).always(() => {
+  $.ajax({
+    url: url,
+    dataType: "json",
+    headers: {
+      "X-TOA-Key": TOA_API_KEY,
+      "X-Application-Origin": "FTCStats",
+    },
+    cache: false,
+    success: callback,
+  }).always(() => {
     inFlightRequests--;
 
     if (inFlightRequests == 0) {
@@ -685,3 +487,4 @@ function getJSONWithSpinner(url, callback) {
     }
   });
 }
+
